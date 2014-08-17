@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="spg.generator">
+<Super>%Persistent</Super>
+<TimeCreated>63416,34167.120781</TimeCreated>
+
+<Method name="CreateDB">
+<Description><![CDATA[
+from example 
+http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNAME=%25Library.Persistent&CSPCHD=001000000000nKXcBK2T2y0000iNbZdooKtihpdM4Xu2KP1g--&CSPSHARE=1]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Name:%String</FormalSpec>
+<Implementation><![CDATA[
+ s ns = $namespace, $namespace="%SYS"
+ Set LowName = $ZCVT(Name,"L")
+
+ //Create directories
+ s Path = "c:\temp\__"_Name
+ s PathDB = Path_"\DB"
+ s PathWEB = Path_"\WEB"
+ do $zu(140,9,Path)
+ do $zu(140,9,PathDB)
+ do $zu(140,9,PathWEB)
+ 
+ // Create DataBase File
+ s Status=##Class(SYS.Database).CreateDatabase(PathDB)
+ i '$$$ISOK(Status) w !,"First Error="_$SYSTEM.Status.GetErrorText(Status)
+ s Properties("Directory")=PathDB
+ s Properties("MountRequired")=1
+ 
+ // Mount database to Cache
+ s Status=##Class(Config.Databases).Create(Name,.Properties)
+ i '$$$ISOK(Status) w !,"First Error="_$SYSTEM.Status.GetErrorText(Status)
+  s Properties("MountRequired")=1
+ s Status=##Class(Config.Databases).Modify(Name,.Properties)
+ 
+ // Create NameSpace
+ 			Set nsProperties("Globals") = Name
+			Set nsProperties("Library") = "CACHELIB"
+			Set nsProperties("Routines") = Name
+			Set nsProperties("SysGlobals") = "CACHESYS"
+			Set nsProperties("SysRoutines") = "CACHESYS"
+			Set nsProperties("TempGlobals") = "CACHETEMP"
+			Set tSC = ##Class(Config.Namespaces).Create(Name,.nsProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+ // Create web apps
+ 			Set tSC = ##Class(Security.System).Get(,.secProperties)
+ 			// default
+			Set cspProperties("AutheEnabled") = 64 // secProperties("AutheEnabled")
+			Set cspProperties("NameSpace") = Name
+			Set cspProperties("Path") = PathWEB
+			Set cspProperties("IsNameSpaceDefault") = 1
+			Set tSC = ##Class(Security.Applications).Create("/web/"_LowName,.cspProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+
+ 			// broker
+			Set cspProperties("AutheEnabled") = 64
+			Set cspProperties("NameSpace") = Name
+			Set cspProperties("DispatchClass") = "WEB.Broker"
+			Set cspProperties("IsNameSpaceDefault") = 0
+			Set tSC = ##Class(Security.Applications).Create("/broker/"_LowName,.cspProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+ 
+ s $namespace=ns 
+
+ Q $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>
