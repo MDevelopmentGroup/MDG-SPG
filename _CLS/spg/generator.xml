@@ -11,6 +11,7 @@ http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNA
 <ClassMethod>1</ClassMethod>
 <FormalSpec>Name:%String</FormalSpec>
 <Implementation><![CDATA[
+ w !,"hi2all",!
  s ns = $namespace, $namespace="%SYS"
  Set LowName = $ZCVT(Name,"L")
 
@@ -66,5 +67,101 @@ http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNA
  Q $$$OK
 ]]></Implementation>
 </Method>
+
+<Method name="CreateClass">
+<Description>
+Cоздание класса</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    //TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          Super: "%Persistent,%Populate",
+          Abstract: "0",
+          Description: "This is TestClass"
+          }
+    */
+    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    //zw obj
+    set sn = $namespace
+    set $namespace = NameSpace //obj.namespace
+    set o = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
+    //Super - тип класса, то что идет после Extends (%Populate,%Persistent, др.классы)
+    set o.Super = obj.Super
+    //Абстрактный или нет (0 или 1)
+    set o.Abstract = obj.Abstract
+    //Описание
+    set o.Description = obj.Description
+    set status = o.%Save() 
+    set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateProperty">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //TODO: ПРИМЕРЫ ЗАПРОСОВ
+      /*
+      data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          nameProperty: "test123",
+          Type: "%String",
+          Relationship: "0",
+          Required: "1",
+          Calculated: "0"
+          }
+          */
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      set sn = $namespace
+      set $namespace = obj.namespace
+      set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
+      set property.Name = obj.nameProperty
+      //Описание
+      set property.Description = obj.Description
+      //Тип свойства (н-р, %Text)
+      set property.Type = obj.Type
+      //do ##class(MDG.Request).GetParameters()
+       // Коллекция (array или list)
+      set property.Collection = obj.Collection
+      //Отношение (0 или 1)
+      set property.Relationship = obj.Relationship
+      set property.Required = obj.Required
+      set property.Calculated = obj.Calculated
+      set property.Parameters = obj.Parameter
+      set status=property.%Save()
+      set $namespace = sn
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Generate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Package</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      w !,NameSpace," ",Package,!
+      do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package)
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^spg.generatorD</DataLocation>
+<DefaultData>generatorDefaultData</DefaultData>
+<IdLocation>^spg.generatorD</IdLocation>
+<IndexLocation>^spg.generatorI</IndexLocation>
+<StreamLocation>^spg.generatorS</StreamLocation>
+<Data name="generatorDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
 </Class>
 </Export>

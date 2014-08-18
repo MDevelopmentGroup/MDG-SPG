@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="MDG.Request">
+<Super>%Persistent</Super>
+<TimeCreated>63407,36185.325569</TimeCreated>
+
+<Method name="GetNamespaces">
+<Description>
+Получение областей</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    #dim tSC As %Status = $$$OK
+    #dim tNS As %String
+    set str=""
+    w "["
+    #; Get the list of namespaces
+    Do List^%SYS.NAMESPACE(.tList)
+    Set tNS="" For  {
+        Set tNS=$Order(tList(tNS),1,tValue) If tNS="" {Quit}         
+         set str=str_"{""Name"":"""_tNS_"""},"
+    }
+    w $E(str,1,*-1)
+    w "]"
+    Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetClass">
+<Description>
+Method returns the class text </Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pNamespace:%String,pClassname:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    #dim tSC As %Status = $$$OK
+    #dim e As %Exception.AbstractException
+    set temp=##class(%ZEN.proxyObject).%New()
+    #dim tStream As %Stream.Character
+    Try {
+        Set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(pNamespace,pClassname,.tStream)
+        If $$$ISERR(tSC) Quit
+       // Do tStream.OutputToDevice()
+        //w $REPLACE($REPLACE(str,$C(10),"//n"),$C(13),"//r")
+        s temp.SourceText=tStream.Read(tStream.Size)
+        do temp.%ToJSON()
+    } Catch (e) {
+        Set tSC=e.AsStatus()
+    } 
+    Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetClassList">
+<Description>
+ Список классов</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>namespace:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+ 
+    set sn = $namespace
+    set $namespace = namespace
+    set s=##class(%SQL.Statement).%New()
+    s sql = "SELECT * FROM %Dictionary.ClassDefinition  where NOT id %STARTSWITH '%' and system <>4"
+   set st=s.%Prepare(sql)
+   set str = ""
+   set rs=s.%Execute()
+  w "["
+    while rs.%Next() {
+          set str = str_ "{""Name"":"""_rs.%Get("ID")_"""},"
+}
+ w $E(str,1,*-1)
+ w "]"
+  set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="UpdateClass">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	//TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          text: "Class Example.Studio Extends (%Persistent,%Populate)'+'\r\n{'+'\r\n//hgjgjgjgh'+'\r\n}",
+          nameClass: "Example.Studio"
+          }
+    */
+         $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+         zn obj.namespace
+    set stream=##class(%Stream.GlobalCharacter).%New()
+    Do stream.Write(obj.text)
+    s st= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.namespace, obj.nameClass, stream)
+    zw st
+    zw stream
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateClass">
+<Description>
+Cоздание класса</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    //TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          Super: "%Persistent,%Populate",
+          Abstract: "0",
+          Description: "This is TestClass"
+          }
+    */
+    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    //zw obj
+    set sn = $namespace
+    set $namespace = obj.namespace
+    set o = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
+    //Super - тип класса, то что идет после Extends (%Populate,%Persistent, др.классы)
+    set o.Super = obj.Super
+    //Абстрактный или нет (0 или 1)
+    set o.Abstract = obj.Abstract
+    //Описание
+    set o.Description = obj.Description
+    set status = o.%Save() 
+    set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CompilationClass">
+<Description>
+Компиляция класса </Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      zn obj.namespace
+     set status=$system.OBJ.Compile(obj.nameClass,,.errorlog)
+     w errorlog
+     q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="DeleteClass">
+<Description>
+Удаление класса</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+       $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+       zw obj
+       zn obj.namespace
+      do ##class(%Studio.ClassMgr).Delete(obj.nameClass)
+]]></Implementation>
+</Method>
+
+<Method name="CreateMethod">
+<Description>
+Создание метода</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//TODO: ПРИМЕРЫ ЗАПРОСОВ
+    	/*
+	data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          ClassMethod: "1",
+          nameMethod: "AtomIO",
+          ReturnType: "%Status",
+          Private: "0",
+          Final: "1"
+          }
+          */
+    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    zn obj.namespace
+        set method=##class(%Dictionary.MethodDefinition).%New(obj.nameClass)
+        set method.ClassMethod=obj.ClassMethod
+        set method.Name=obj.nameMethod
+        set method.ReturnType = obj.ReturnType
+        set method.Private = obj.Private
+        set method.Final = obj.Final
+        set status=method.%Save()   
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateProperty">
+<Description>
+Создание свойства</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //TODO: ПРИМЕРЫ ЗАПРОСОВ
+      /*
+      data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          nameProperty: "test123",
+          Type: "%String",
+          Relationship: "0",
+          Required: "1",
+          Calculated: "0"
+          }
+          */
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      set sn = $namespace
+      set $namespace = obj.namespace
+      set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
+      set property.Name = obj.nameProperty
+      //Описание
+      set property.Description = obj.Description
+      //Тип свойства (н-р, %Text)
+      set property.Type = obj.Type
+      //do ##class(MDG.Request).GetParameters()
+       // Коллекция (array или list)
+      set property.Collection = obj.Collection
+      //Отношение (0 или 1)
+      set property.Relationship = obj.Relationship
+      set property.Required = obj.Required
+      set property.Calculated = obj.Calculated
+      set property.Parameters = obj.Parameter
+      set status=property.%Save()
+      set $namespace = sn
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetParameters">
+<Description>
+Получение параметров</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>type1:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s qqq = "%"_type1
+  set s=##class(%Library.ResultSet).%New("%Dictionary.ParameterDefinitionQuery:Summary")
+  do s.Execute(qqq)
+  set str = ""
+  w "["
+  while s.Next()
+ {      
+	 set str = str_ "{""Name"":"""_s.Get("Name")_"""},"
+	}
+ w $E(str,1,*-1)
+ w "]"
+  q $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^MDG.RequestD</DataLocation>
+<DefaultData>RequestDefaultData</DefaultData>
+<IdLocation>^MDG.RequestD</IdLocation>
+<IndexLocation>^MDG.RequestI</IndexLocation>
+<StreamLocation>^MDG.RequestS</StreamLocation>
+<Data name="RequestDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

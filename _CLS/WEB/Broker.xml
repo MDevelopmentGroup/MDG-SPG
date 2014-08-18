@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WEB.Broker">
+<Super>%CSP.REST</Super>
+<TimeCreated>63407,31631.160956</TimeCreated>
+
+<XData name="UrlMap">
+<Data><![CDATA[
+<Routes>
+ 	<Route Url="/createproject/:Name" Method="POST" Call="spg.generator:CreateDB" />
+    <Route Url="/createclass/:NameSpace" Method="POST" Call="spg.generator:CreateClass" />
+    <Route Url="/createproperty" Method="POST" Call="spg.generator:CreateProperty" />
+    <Route Url="/Generate/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate" />
+ 
+    <Route Url="/namespaces" Method="GET" Call="MDG.Request:GetNamespaces" />
+    <Route Url="/namespaces/:namespace" Method="GET" Call="MDG.Request:GetClassList" />
+    <Route Url="/namespaces/:namespace/:classname" Method="GET" Call="MDG.Request:GetClass" />
+    <Route Url="/namespaces/:namespace/:classname" Method="PUT" Call="MDG.Request:PutClass" />
+    <Route Url="/updateclass" Method="POST" Call="MDG.Request:UpdateClass" />
+    <Route Url="/createclass" Method="POST" Call="MDG.Request:CreateClass" />
+    <Route Url="/compilationclass" Method="POST" Call="MDG.Request:CompilationClass" />
+    <Route Url="/deleteclass" Method="POST" Call="MDG.Request:DeleteClass" />
+    <Route Url="/createmethod" Method="POST" Call="MDG.Request:CreateMethod" />
+    <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
+    <Route Url="/getparameter/:type1" Method="GET" Call="MDG.Request:GetParameters" />
+
+</Routes>
+]]></Data>
+</XData>
+</Class>
+</Export>
