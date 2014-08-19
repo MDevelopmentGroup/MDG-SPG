@@ -72,7 +72,7 @@ http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNA
 <Description>
 Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>NameSpace</FormalSpec>
+<FormalSpec>NameSpace,obj</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
     //TODO: ПРИМЕРЫ ЗАПРОСОВ
@@ -84,7 +84,7 @@ Cоздание класса</Description>
           Description: "This is TestClass"
           }
     */
-    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    //$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
     //zw obj
     set sn = $namespace
     set $namespace = NameSpace //obj.namespace
@@ -103,6 +103,7 @@ Cоздание класса</Description>
 
 <Method name="CreateProperty">
 <ClassMethod>1</ClassMethod>
+<FormalSpec>obj</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
       //TODO: ПРИМЕРЫ ЗАПРОСОВ
@@ -116,7 +117,7 @@ Cоздание класса</Description>
           Calculated: "0"
           }
           */
-      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      //$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
       set sn = $namespace
       set $namespace = obj.namespace
       set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
@@ -145,8 +146,52 @@ Cоздание класса</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
       w !,NameSpace," ",Package,!
+      
       do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package)
       q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Generate2">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Package</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //создаём БД
+      do ..CreateDB(NameSpace)
+      w !,"base created"
+      
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+ 		// получаем список классов и создаём их
+ 		for i=1:1:obj.Size {
+			set Class= obj.Oref(i)
+			w !,"-  ",Class.Properties.Size," p size = ",Class.Name
+            s Class.namespace = NameSpace
+            s Class.nameClass = Package_"."_Class.Name
+            s Class.Super =  "%Persistent,%Populate"
+            s Class.Abstract = "0"
+            s Class.Description = "This is auto generated Class by SPG"
+			//zw Class
+			do ..CreateClass(NameSpace,Class)
+		      // получаем список свойств класса
+		      for j=1:1:Class.Properties.Size {
+			      //zw Property
+			      set Property = Class.Properties.Oref(j)
+                  s Property.namespace = Class.namespace
+                  s Property.nameClass = Class.nameClass
+                  s Property.nameProperty = Property.Name
+			      //w !,"1"
+                  s Property.Type = "%String"
+                  s Property.Relationship = "0"
+                  s Property.Required = "0"
+                  s Property.Calculated = "0"
+                  do ..CreateProperty(Property)
+			      
+			      //w !,"-- j --",Property.Name,!
+ 					}
+ 				}
+ do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package) 
+ q $$$OK
 ]]></Implementation>
 </Method>
 

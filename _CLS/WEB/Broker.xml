@@ -11,6 +11,7 @@
     <Route Url="/createclass/:NameSpace" Method="POST" Call="spg.generator:CreateClass" />
     <Route Url="/createproperty" Method="POST" Call="spg.generator:CreateProperty" />
     <Route Url="/Generate/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate" />
+    <Route Url="/Generate2/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate2" />
  
     <Route Url="/namespaces" Method="GET" Call="MDG.Request:GetNamespaces" />
     <Route Url="/namespaces/:namespace" Method="GET" Call="MDG.Request:GetClassList" />

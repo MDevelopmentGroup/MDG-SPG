@@ -1,0 +1,1075 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-08-19 18:16:48">
+
+
+<Class name="MDG.Request">
+<Super>%Persistent</Super>
+<TimeChanged>63417,72345.675196</TimeChanged>
+<TimeCreated>63407,36185.325569</TimeCreated>
+
+<Method name="GetNamespaces">
+<Description>
+Получение областей</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    #dim tSC As %Status = $$$OK
+    #dim tNS As %String
+    set str=""
+    w "["
+    #; Get the list of namespaces
+    Do List^%SYS.NAMESPACE(.tList)
+    Set tNS="" For  {
+        Set tNS=$Order(tList(tNS),1,tValue) If tNS="" {Quit}         
+         set str=str_"{""Name"":"""_tNS_"""},"
+    }
+    w $E(str,1,*-1)
+    w "]"
+    Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetClass">
+<Description>
+Method returns the class text </Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pNamespace:%String,pClassname:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    #dim tSC As %Status = $$$OK
+    #dim e As %Exception.AbstractException
+    set temp=##class(%ZEN.proxyObject).%New()
+    #dim tStream As %Stream.Character
+    Try {
+        Set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(pNamespace,pClassname,.tStream)
+        If $$$ISERR(tSC) Quit
+       // Do tStream.OutputToDevice()
+        //w $REPLACE($REPLACE(str,$C(10),"//n"),$C(13),"//r")
+        s temp.SourceText=tStream.Read(tStream.Size)
+        do temp.%ToJSON()
+    } Catch (e) {
+        Set tSC=e.AsStatus()
+    } 
+    Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetClassList">
+<Description>
+ Список классов</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>namespace:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+ 
+    set sn = $namespace
+    set $namespace = namespace
+    set s=##class(%SQL.Statement).%New()
+    s sql = "SELECT * FROM %Dictionary.ClassDefinition  where NOT id %STARTSWITH '%' and system <>4"
+   set st=s.%Prepare(sql)
+   set str = ""
+   set rs=s.%Execute()
+  w "["
+    while rs.%Next() {
+          set str = str_ "{""Name"":"""_rs.%Get("ID")_"""},"
+}
+ w $E(str,1,*-1)
+ w "]"
+  set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="UpdateClass">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	//TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          text: "Class Example.Studio Extends (%Persistent,%Populate)'+'\r\n{'+'\r\n//hgjgjgjgh'+'\r\n}",
+          nameClass: "Example.Studio"
+          }
+    */
+         $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+         zn obj.namespace
+    set stream=##class(%Stream.GlobalCharacter).%New()
+    Do stream.Write(obj.text)
+    s st= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.namespace, obj.nameClass, stream)
+    zw st
+    zw stream
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateClass">
+<Description>
+Cоздание класса</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    //TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          Super: "%Persistent,%Populate",
+          Abstract: "0",
+          Description: "This is TestClass"
+          }
+    */
+    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    //zw obj
+    set sn = $namespace
+    set $namespace = obj.namespace
+    set o = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
+    //Super - тип класса, то что идет после Extends (%Populate,%Persistent, др.классы)
+    set o.Super = obj.Super
+    //Абстрактный или нет (0 или 1)
+    set o.Abstract = obj.Abstract
+    //Описание
+    set o.Description = obj.Description
+    set status = o.%Save() 
+    set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CompilationClass">
+<Description>
+Компиляция класса </Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      zn obj.namespace
+     set status=$system.OBJ.Compile(obj.nameClass,,.errorlog)
+     w errorlog
+     q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="DeleteClass">
+<Description>
+Удаление класса</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+       $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+       zw obj
+       zn obj.namespace
+      do ##class(%Studio.ClassMgr).Delete(obj.nameClass)
+]]></Implementation>
+</Method>
+
+<Method name="CreateMethod">
+<Description>
+Создание метода</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//TODO: ПРИМЕРЫ ЗАПРОСОВ
+    	/*
+	data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          ClassMethod: "1",
+          nameMethod: "AtomIO",
+          ReturnType: "%Status",
+          Private: "0",
+          Final: "1"
+          }
+          */
+    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    zn obj.namespace
+        set method=##class(%Dictionary.MethodDefinition).%New(obj.nameClass)
+        set method.ClassMethod=obj.ClassMethod
+        set method.Name=obj.nameMethod
+        set method.ReturnType = obj.ReturnType
+        set method.Private = obj.Private
+        set method.Final = obj.Final
+        set status=method.%Save()   
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateProperty">
+<Description>
+Создание свойства</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //TODO: ПРИМЕРЫ ЗАПРОСОВ
+      /*
+      data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          nameProperty: "test123",
+          Type: "%String",
+          Relationship: "0",
+          Required: "1",
+          Calculated: "0"
+          }
+          */
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      set sn = $namespace
+      set $namespace = obj.namespace
+      set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
+      set property.Name = obj.nameProperty
+      //Описание
+      set property.Description = obj.Description
+      //Тип свойства (н-р, %Text)
+      set property.Type = obj.Type
+      //do ##class(MDG.Request).GetParameters()
+       // Коллекция (array или list)
+      set property.Collection = obj.Collection
+      //Отношение (0 или 1)
+      set property.Relationship = obj.Relationship
+      set property.Required = obj.Required
+      set property.Calculated = obj.Calculated
+      set property.Parameters = obj.Parameter
+      set status=property.%Save()
+      set $namespace = sn
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetParameters">
+<Description>
+Получение параметров</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>type1:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s qqq = "%"_type1
+  set s=##class(%Library.ResultSet).%New("%Dictionary.ParameterDefinitionQuery:Summary")
+  do s.Execute(qqq)
+  set str = ""
+  w "["
+  while s.Next()
+ {      
+	 set str = str_ "{""Name"":"""_s.Get("Name")_"""},"
+	}
+ w $E(str,1,*-1)
+ w "]"
+  q $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^MDG.RequestD</DataLocation>
+<DefaultData>RequestDefaultData</DefaultData>
+<IdLocation>^MDG.RequestD</IdLocation>
+<IndexLocation>^MDG.RequestI</IndexLocation>
+<StreamLocation>^MDG.RequestS</StreamLocation>
+<Data name="RequestDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Project name="SPG" LastModified="2014-08-19 18:02:11.010019">
+  <Items>
+    <ProjectItem name="MDG" type="PKG"></ProjectItem>
+    <ProjectItem name="Template" type="PKG"></ProjectItem>
+    <ProjectItem name="Template.SPG" type="CLS"></ProjectItem>
+    <ProjectItem name="WEB" type="PKG"></ProjectItem>
+    <ProjectItem name="spg" type="PKG"></ProjectItem>
+  </Items>
+</Project>
+
+
+<Class name="Template.Class">
+<Super>%Persistent</Super>
+<TimeChanged>63407,42588.154183</TimeChanged>
+<TimeCreated>63264,57137.71731</TimeCreated>
+
+<Parameter name="%DefaultNameSpace">
+<Default>%SYS</Default>
+</Parameter>
+
+<Method name="%Compile">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,ClassName</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	zn NameSpace
+	set status=$system.OBJ.Compile(ClassName)
+	zn ..#%DefaultNameSpace
+	Q status
+]]></Implementation>
+</Method>
+
+<Method name="%CreateClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace:%String,ClassName:%String,Extends:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	zn NameSpace
+	set status=$$$OK
+	//If ('..%CheckClass(ClassName)){
+		set class=##class(%Dictionary.ClassDefinition).%New()
+		set class.Name=ClassName
+		set class.Super=Extends
+		set status=class.%Save()
+		
+	//}
+	//Else{
+	//	set status=ClassName_" class has already been created"
+	//	}
+	zn ..#%DefaultNameSpace
+	Q status
+]]></Implementation>
+</Method>
+
+<Method name="%CheckClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,ClassName:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	zn NameSpace
+	set status=$$$OK
+	set status=##class(%Dictionary.ClassDefinition).%Exists(ClassName)
+	zn ..#%DefaultNameSpace
+	Quit status
+]]></Implementation>
+</Method>
+
+<Method name="%CreateMethod">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,ClassName,MethodName,InputList,ReturnType,Code,Description</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	zn NameSpace
+	set status=$$$OK
+	//If (..%CheckClass(ClassName)){
+	//	If ('..%CheckMethod(NameSpace,ClassName,MethodName)){
+			set method=##class(%Dictionary.MethodDefinition).%New(ClassName)
+			set method.ClassMethod=1
+			set method.Name=MethodName
+			set method.FormalSpec=InputList
+			set method.Implementation=Code
+			set method.ReturnType=ReturnType
+			set method.Description=Description
+			set status=method.%Save()
+		//	}
+		//Else{
+		//		set status=MethodName_" Method has already been created"
+		//	}
+		//}
+	//Else{
+	//	set status=ClassName_" Class does not exist"
+	//	}
+	zn ..#%DefaultNameSpace	
+
+	Quit status
+]]></Implementation>
+</Method>
+
+<Method name="%CheckMethod">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,ClassName,MethodName</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	zn NameSpace
+	set method=##class(%Dictionary.MethodDefinition).%New(ClassName)
+	set status=$$$OK
+	set status=method.%Exists(MethodName)
+	zn ..#%DefaultNameSpace
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Template.ClassD</DataLocation>
+<DefaultData>ClassDefaultData</DefaultData>
+<IdLocation>^Template.ClassD</IdLocation>
+<IndexLocation>^Template.ClassI</IndexLocation>
+<StreamLocation>^Template.ClassS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="ClassDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+
+
+<Class name="Template.Spike">
+<Super>%Persistent</Super>
+<TimeChanged>63418,43493.421048</TimeChanged>
+<TimeCreated>63406,37652.223916</TimeCreated>
+
+<Parameter name="%DefaultNameSpace">
+<Default>%SYS</Default>
+</Parameter>
+
+<Method name="GetPath">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>cspapp</FormalSpec>
+<Implementation><![CDATA[
+
+  s ns = $namespace, $namespace="%SYS"
+  
+  k csp s csp = ##class(Security.Applications).Get(cspapp,.csp)
+  
+  s $namespace=ns 
+  Q $g(csp("Path"))
+]]></Implementation>
+</Method>
+
+<Method name="GetDefault">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>targetNS:%String=$namespace</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	s defapp = $System.CSP.GetDefaultApp(targetNS)
+	//w defapp
+	Q defapp
+	 
+	s ns = $namespace, $namespace="%SYS"
+	 	
+	 	s rs=##class(%ResultSet).%New("Security.Applications:Detail")
+	 	s sc=rs.%Execute("") 
+	 	
+	 	#define g(%name) $g(rs.Data(%name))
+	 	s (cspapp,default) = ""
+	 	while rs.%Next() {
+			
+			s default = $$$g("IsNameSpaceDefault") 	
+			s cspapp = $$$g("Name")
+			s appns = $$$g("NameSpace")
+			//if appns'=targetNS continue
+			
+			w !,cspapp," -> ",default
+			Q:default=1
+			
+		} d rs.%Close() k rs
+	s $namespace=ns
+]]></Implementation>
+</Method>
+
+<Method name="SaveToFile">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>filePath:%String,body:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+		s fileM=##class(%Stream.FileBinary).%New()
+		s fileM.Filename=filePath
+		s st=fileM.Write(body)
+		s st=fileM.%Save()
+		k fileM
+ 		q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateCacheMethods">
+<Description>
+В случае наличия броекра - подтягивает и его</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Package,location="C:\InterSystems\Cache\CSP"</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+		w !,"TEST",!
+		s defaultPath = ""
+		s ns = $namespace
+		if location="C:\InterSystems\Cache\CSP" {
+			s location = ..GetPath(..GetDefault(NameSpace)) //_Package
+			}
+			
+		w !,"проект будет записан по пути "_location 
+		Set LowName = $ZCVT(NameSpace,"L")
+		#dim st as %Status=$$$OK
+		
+		#dim WebApp As %String= "web/"_LowName //"rest"_Package
+		#dim Broker As %String= "broker/"_LowName
+		//#dim BootStrapDir As %String="C:\temp\css\"
+		//#dim AngularDir As %String="C:\temp\lib"
+		#dim TemplPath As %String="C:\temp\templ"
+		//#dim LNameSpace As %String=$ZCONVERT(NameSpace,"L")
+		#dim jsPath = location_"\js\"
+		#dim partPath = location_"\partials\"
+
+		#dim ClassName,FullClassName,Property,XDATA,Controller,Factory,App,index,menu As %String=""
+		#define t3 $C(10,9,9,9)
+		#define t2 $C(10,9,9)
+		#define t1 $C(10,9)
+		#define div(%name) "<div class='"_%name_"'>"
+		#define div2(%name,%body) $$$t1_"<div class='"_%name_"'>"_$$$t3_%body_$$$t2_"</div>"
+		#define label(%name) $$$t3_"<label class='col-lg-4 control-label' for='"_%name_"'>"_%name_"</label>"
+		#define inputform(%name,%prop) $$$div2("form-group",$$$label(%prop)_$$$div2("col-lg-8","<input type='text' id='Comment' class='form-control' ng-model='"_%name_"."_%prop_"' placeholder='"_%prop_"' >"))
+		//w !,"***** NS-"_NameSpace," P-",Package," L-",location," jsP-",jsPath,"-"
+
+		s File=##class(%File).%New()
+		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\css\"),st=File.%Save()
+		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\lib\"),st=File.%Save()
+		s st=File.CopyDir(TemplPath,location,1,1)
+		
+		s st=File.%Save()
+		w st
+		//s st=File.CopyDir(BootStrapDir,location_"\"_LNameSpace_"\css\",1,1),st=File.%Save()
+		//s st=File.CopyDir(AngularDir,location_"\"_LNameSpace_"\lib\",1,1),st=File.%Save()
+		s st=File.CreateDirectory(jsPath),st=File.%Save()
+		s st=File.CreateDirectory(partPath),st=File.%Save()
+		k File
+		
+		S stream=##class(%FileCharacterStream).%New()
+		S stream.Filename=TemplPath_"\index.html"
+		//читаем весь файл
+		s index="<!DOCTYPE html>"_$C(10)_"<html ng-app='"_Package_"'>"_$C(10)
+		S index=index_stream.Read(stream.Size)
+		d ..SaveToFile(location_"\index.html",index)
+		
+		s Factory="angular.module('FactoryModule',[])"
+		s App="angular.module('"_Package_"',['ngCookies','ngResource','ngRoute','ngSanitize','ngAnimate','FactoryModule'"_$C(10)_
+		"]).config(['$routeProvider',  function($routeProvider) { $routeProvider."
+		s menu="<ul class='nav nav-pills nav-stacked'>"
+		//#dim ClassList As %ArrayOfDataTypes
+		s ClassList=##class(Template.Util).%SubClassList(NameSpace,Package),XDATA=$C(9)_"<Routes>"_$C(10)
+		// надо ли?
+		s temp=##class(%Stream.TmpCharacter).%New()
+		f i=0:1:ClassList.Count()-1 {
+			w !, "формируем контроллеры"
+			s FullClassName=ClassList.GetAt(i)
+			s ClassName=$P(ClassList.GetAt(i),".",2)
+			s TempCreate=$C(9)_"set st=$$$OK"_$C(10,9)_"try{"_$C(10,9)_
+			"$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))"_$C(10)_
+ 					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%New()"_$C(10)
+ 					
+ 					s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)	
+					s PartialCRUD=$$$div("well")_$$$t1_$$$div("row")_$$$t1_$$$div("col-lg-8")_
+					$$$t2_"<form class='form-horizontal' ng-model='"_ClassName_"' ng-submit='Submit("_ClassName_")'>"
+    					for key=1:1:PropertyList.Count()
+    					 
+    					{
+	    				 s Property=PropertyList.GetAt(key)
+ 						 s TempCreate=TempCreate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
+	    				 s PartialCRUD=PartialCRUD_$$$inputform(ClassName,Property)
+ 					     w !, "формируем модифицирующие партиции"			 
+ 						 }
+ 					s PartialCRUD=PartialCRUD_"<div class='form-group'>"_$$$t2_
+			  		"<label class='col-lg-4 control-label'></label>"_$$$t2_
+			    	"<div class='col-lg-8'>"_$$$t2_
+			    	"<button type='submit' class='btn btn-success'>OK</button>"_$$$t2_
+			    	"</div>"_$$$t2_
+			    	"</div>"
+ 					s PartialCRUD=PartialCRUD_$$$t2_"</form>"_$$$t2_"</div>"_$$$t2_"</div>"_$$$t1_"</div>"	 
+ 					d ..SaveToFile(partPath_ClassName_".html",PartialCRUD)
+
+ 					s TempCreate=TempCreate_$C(9)_"$$$THROWONERROR(st,"_ClassName_".%Save())"_$C(10)_$C(9)_"} catch ex{set st=ex.AsStatus()}"_$C(10)_$C(9)_"quit st"
+ 			s st=temp.Write(TempCreate),TempCreate=""
+ 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Create","","%Status",temp,"Create "_FullClassName), st=temp.Clear()
+ 			s TempUpdate=$C(9)_"set st=$$$OK"_$C(10)_$C(9)_"try{"_$C(10)_
+ 					$C(9)_"$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))"_$C(10)_
+ 					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%OpenId(obj.ID)"_$C(10)
+ 					 s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)
+					 s Partial="<div class='col-lg-10'>"_$$$t2_
+                		"<input type='text' id='appendedInput'  ng-model='filterApp' placeholder='Search string'>"_$$$t2_
+                		"<span class='add-on'><i class='icon-filter'></i></span>"_$C(10)_"</div>"_
+					 	"<div class=''>"_$$$t1_
+							"<a class='btn btn-success' href='#/Create"_ClassName_"'>Create "_ClassName_"</a>"_$$$t1_
+							"<div class='row' ng-repeat='"_ClassName_" in "_ClassName_"s | filter:filterApp'>"_$$$t1_
+							"<div class='col-lg-10'>" 
+    					for key=1:1:PropertyList.Count()
+    					 
+    					{
+	    				 s Property=PropertyList.GetAt(key)
+    					 s TempUpdate=TempUpdate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
+    					 w !, "формируем визуализирующие партиции"			 
+						 s Partial=Partial_" {{"_ClassName_"."_Property_"}} </br>"
+ 						 }
+ 					s Partial=Partial_"</div>"_$$$t1_
+							"<div class='col-lg-2'>"_$$$t1_
+							"<button class='btn btn-default' ng-click='Delete("_ClassName_".ID)'><span class='glyphicon glyphicon-trash'></span></button>"_$$$t1_
+							"<a class='btn btn-default' href='#/Update"_ClassName_"/{{"_ClassName_".ID}}'><span class='glyphicon glyphicon-refresh'></span></a>"_$$$t1_
+							"</div></div></div>"	 
+ 						 d ..SaveToFile(partPath_"View"_ClassName_".html",Partial)
+ 			 		s TempUpdate=TempUpdate_$C(9)_"$$$THROWONERROR(st,"_ClassName_".%Save())"_$C(10)_$C(9)_"} catch ex{set st=ex.AsStatus()}"_$C(10)_$C(9)_"quit st"
+ 			s st=temp.Write(TempUpdate),TempUpdate=""
+ 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Update","","%Status",temp,"Update "_FullClassName), st=temp.Clear()
+ 			s TempGet=$C(9)_"set sql=""select * from "_FullClassName_"  where ID=""_ID"_$C(10)_$C(9)_"do ##class(%ZEN.Auxiliary.jsonSQLProvider).%WriteJSONFromSQL(,sql)"_$C(10)_$C(9)_"Q $$$OK"
+ 			s st=temp.Write(TempGet),TempGet=""
+ 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Get","ID","%Status",temp,"Get "_FullClassName), st=temp.Clear()
+ 			s TempGetAll=$C(9)_"set sql=""select * from "_FullClassName_""""_$C(10)_$C(9)_"do ##class(%ZEN.Auxiliary.jsonSQLProvider).%WriteJSONFromSQL(,sql)"_$C(10)_$C(9)_"Q $$$OK"
+ 			s st=temp.Write(TempGetAll),TempGetAll=""
+ 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"GetAll","","%Status",temp,"GetAll "_FullClassName), st=temp.Clear()
+ 			
+ 			s TempDelete=$C(9)_"Q ##class("_FullClassName_").%DeleteId(ID)"
+ 			s st=temp.Write(TempDelete),TempDelete=""
+ 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Delete","ID","%Status",temp,"Delete "_FullClassName), st=temp.Clear()
+			
+			s XDATA=XDATA_$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Create"" Method=""POST"" 	Call="""_FullClassName_":Create""/>"_$C(10)_
+			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Update"" Method=""POST"" 	Call="""_FullClassName_":Update""/>"_$C(10)_
+			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/GetAll"" Method=""GET"" 	Call="""_FullClassName_":GetAll""/>"_$C(10)_
+			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Get/:ID"" Method=""GET"" 	Call="""_FullClassName_":Get""/>"_$C(10)_
+			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Delete/:ID"" Method=""DELETE"" 	Call="""_FullClassName_":Delete""/>"_$C(10)
+			d ##class(Template.Class).%Compile(NameSpace,FullClassName)
+			w !,"*****"_$C(10)_FullClassName_$C(10)_"*******"
+			
+			s Factory=Factory_$$$t1_".factory('"_ClassName_"Factory',['$http',function($http){"_"return {"_$$$t2_
+            "Create:function(data)   {return $http.post('/"_Broker_"/"_ClassName_"/Create',data);},"_$$$t2_
+            "Update:function(data)   {return $http.post('/"_Broker_"/"_ClassName_"/Update',data);},"_$$$t2_
+            "Delete:function(ID)   {return $http.delete('/"_Broker_"/"_ClassName_"/Delete/'+ID);},"_$$$t2_
+            "Get:function(ID)      {return $http.get('/"_Broker_"/"_ClassName_"/Get/'+ID);},"_$$$t2_
+            "GetAll:function()      {return $http.get('/"_Broker_"/"_ClassName_"/GetAll');}"_$$$t2_
+            "}}])"
+            
+            s Controller=Controller_" function View"_ClassName_"Ctrl($rootScope,$scope,$routeParams,"_ClassName_"Factory){"_$$$t2_
+    		"$scope.Get"_ClassName_"=function(){"_$$$t2_
+            ""_ClassName_"Factory.GetAll().success(function(data){"_"$scope."_ClassName_"s=data.children;"_"});}; "_$$$t2_
+			"$scope.Get"_ClassName_"();"_
+			"$scope.Delete=function(ID){"_ClassName_"Factory.Delete(ID).success(function(){$scope.Get"_ClassName_"();})};"_$$$t1_
+			"} "_$C(10)_
+			
+			" function Create"_ClassName_"Ctrl($rootScope,$scope,$routeParams,"_ClassName_"Factory){"_$$$t2_
+			"$scope.Submit=function(data){ "_ClassName_"Factory.Create(data).success(function(){location.href='#/"_ClassName_"';}); }"_$$$t2_
+			"} "_$C(10)_
+			
+			" function Update"_ClassName_"Ctrl($rootScope,$scope,$routeParams,"_ClassName_"Factory){"_$$$t2_
+			"$scope.Submit=function(data){ "_ClassName_"Factory.Update(data).success(function(){location.href='#/"_ClassName_"';}); };"_$$$t2_
+			"$scope.Get=function(){"_$$$t2_
+			""_ClassName_"Factory.Get($routeParams.ID).success(function(data){"_"$scope."_ClassName_"=data.children[0];"_"});"_$$$t2_
+			"}"_$$$t2_"$scope.Get();"_$$$t2_
+			"} "_$C(10)
+			
+			s App=App_$C(10,9)_"when('/"_ClassName_"',{templateUrl: 'partials/View"_ClassName_".html', controller: View"_ClassName_"Ctrl})."_$C(10,9)
+			_"when('/Create"_ClassName_"',{templateUrl: 'partials/"_ClassName_".html', controller: Create"_ClassName_"Ctrl})."_$C(10,9)
+			_"when('/Update"_ClassName_"/:ID',{templateUrl: 'partials/"_ClassName_".html', controller: Update"_ClassName_"Ctrl})."_$C(10,9)
+			
+			s menu=menu_"<li><a href='#/"_ClassName_"'>"_ClassName_"</a></li>"_$C(10)
+			
+			
+		}
+		s App=App_"otherwise({redirectTo: '/"_ClassName_"'});}]);"_$C(10)
+		s menu=menu_"</ul>"_$C(10)
+		s XDATA=XDATA_$C(9)_"</Routes>"_$C(10),st=##class(Template.Class).%CreateClass(NameSpace,"WEB.Broker","%CSP.REST")
+		s st= ##class(Template.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Write(XDATA) //, XDATA=""
+		zn NameSpace
+		s XD=##class(%Dictionary.XDataDefinition).%New("WEB.Broker"),XD.Name="UrlMap", st=XD.Data.Write(XDATA),st=XD.%Save()
+		zn ..#%DefaultNameSpace
+
+		s st= ##class(Template.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Clear()
+  
+ 		d ..SaveToFile(jsPath_"controller.js",Controller)
+		d ..SaveToFile(jsPath_"factory.js",Factory)
+		d ..SaveToFile(jsPath_"app.js",App)
+		d ..SaveToFile(partPath_"menu.html",menu)
+		s $namespace=ns
+		w !,"**********************************"
+		w !,"проект доступен по адресу имя_сервера "_..GetDefault(NameSpace)_"/"_Package_"/index.html"
+		w !,"необходимо связать брокер на адрес /"_WebApp
+		w !,"задать Класс-обработчик 'WEB.Broker'"_$C(10)_"ВНИМАНИЕ!!! Регистр имеет значение!"
+		w !,"**********************************"
+		// todo: возвращать адреcc ??
+		Q $$$OK
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+// CreateCacheMethods
+
+]]></Content>
+</UDLText>
+
+<UDLText name="T">
+<Content><![CDATA[
+// Class
+
+]]></Content>
+</UDLText>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Template.SpikeD</DataLocation>
+<DefaultData>SpikeDefaultData</DefaultData>
+<IdLocation>^Template.SpikeD</IdLocation>
+<IndexLocation>^Template.SpikeI</IndexLocation>
+<StreamLocation>^Template.SpikeS</StreamLocation>
+<Data name="SpikeDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Template.Util">
+<TimeChanged>63418,48649.350087</TimeChanged>
+<TimeCreated>63260,39857.653675</TimeCreated>
+
+<Parameter name="%WorkNameSpace">
+</Parameter>
+
+<Parameter name="%DefaultNameSpace">
+<Default>%SYS</Default>
+</Parameter>
+
+<Method name="%NameSpaceList">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ArrayOfDataTypes</ReturnType>
+<Implementation><![CDATA[
+	set TempList=##class(%ArrayOfDataTypes).%New()
+	d List^%SYS.NAMESPACE(.nslist,0)
+	Set ns=""
+	Set ns=$O(nslist(ns))
+	set i=0
+	while ns'=""{
+		do TempList.SetAt(ns,i)
+		Set ns=$O(nslist(ns))
+		set i=i+1				
+		}
+	Quit TempList
+]]></Implementation>
+</Method>
+
+<Method name="%SubClassList">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>%WorkNameSpace,%Class:%String="",%SystemClass:%Boolean=0</FormalSpec>
+<ReturnType>%ArrayOfDataTypes</ReturnType>
+<Implementation><![CDATA[
+	ZN %WorkNameSpace
+	set TempList=##class(%ArrayOfDataTypes).%New()
+	set ClassList=##class(%ResultSet).%New("%ClassDefinition:ClassInfo")
+ 	do ClassList.Execute(%Class)
+ 	set i=0
+ 	   	while ClassList.Next() 
+ 	   {
+	 	   if ('%SystemClass )
+	 	   {
+		 	   if (($F(ClassList.Get("Name"),"%")=0) && ($F(ClassList.Get("Name"),"INFORMATION.SCHEMA")=0) && ($F(ClassList.Get("Name"),"sc.min")=0) && ($F(ClassList.Get("Name"),"WEB.Broker")=0)){
+   	 	   		do TempList.SetAt(ClassList.Get("Name"),i)
+ 				set i=i+1
+		 	   }
+		 	}
+		   else
+		   {
+				do TempList.SetAt(ClassList.Get("Name"),i)
+ 				set i=i+1
+			 }
+ 	   }
+	ZN ..#%DefaultNameSpace
+	Quit TempList
+]]></Implementation>
+</Method>
+
+<Method name="%ListPropertiesOfClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>%WorkNameSpace,%Class:%String</FormalSpec>
+<ReturnType>%ArrayOfDataTypes</ReturnType>
+<Implementation><![CDATA[
+	//w !,"Hell %)"_%WorkNameSpace_" "_%Class
+	ZN %WorkNameSpace
+	set TempList=##class(%ArrayOfDataTypes).%New()
+	set Class=##class(%ClassDefinition).%OpenId(%Class)
+	set key=""
+    do Class.Properties.GetNext(.key)
+    while key'="" 
+    	{
+	    	set Property=$LB(Class.Properties.GetAt(key).Name,
+	    			  	     Class.Properties.GetAt(key).Type,
+	    			  		 Class.Properties.GetAt(key).Description,
+	    			  		 Class.Properties.GetAt(key).Collection,
+	    			  		 Class.Properties.GetAt(key).InitialExpression)
+	     
+	     do TempList.SetAt(Class.Properties.GetAt(key).Name,key)
+		
+	     d Class.Properties.GetNext(.key)	
+	     }
+   	ZN ..#%DefaultNameSpace
+   	//ZW TempList
+	Quit TempList
+]]></Implementation>
+</Method>
+
+<Method name="%OpenFile">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="%WriteFile">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="%CheckDir">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Template.UtilD</DataLocation>
+<DefaultData>UtilDefaultData</DefaultData>
+<IdLocation>^Template.UtilD</IdLocation>
+<IndexLocation>^Template.UtilI</IndexLocation>
+<StreamLocation>^Template.UtilS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="UtilDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="WEB.Broker">
+<Super>%CSP.REST</Super>
+<TimeChanged>63418,45767.328357</TimeChanged>
+<TimeCreated>63407,31631.160956</TimeCreated>
+
+<XData name="UrlMap">
+<Data><![CDATA[
+<Routes>
+ 	<Route Url="/createproject/:Name" Method="POST" Call="spg.generator:CreateDB" />
+    <Route Url="/createclass/:NameSpace" Method="POST" Call="spg.generator:CreateClass" />
+    <Route Url="/createproperty" Method="POST" Call="spg.generator:CreateProperty" />
+    <Route Url="/Generate/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate" />
+    <Route Url="/Generate2/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate2" />
+ 
+    <Route Url="/namespaces" Method="GET" Call="MDG.Request:GetNamespaces" />
+    <Route Url="/namespaces/:namespace" Method="GET" Call="MDG.Request:GetClassList" />
+    <Route Url="/namespaces/:namespace/:classname" Method="GET" Call="MDG.Request:GetClass" />
+    <Route Url="/namespaces/:namespace/:classname" Method="PUT" Call="MDG.Request:PutClass" />
+    <Route Url="/updateclass" Method="POST" Call="MDG.Request:UpdateClass" />
+    <Route Url="/createclass" Method="POST" Call="MDG.Request:CreateClass" />
+    <Route Url="/compilationclass" Method="POST" Call="MDG.Request:CompilationClass" />
+    <Route Url="/deleteclass" Method="POST" Call="MDG.Request:DeleteClass" />
+    <Route Url="/createmethod" Method="POST" Call="MDG.Request:CreateMethod" />
+    <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
+    <Route Url="/getparameter/:type1" Method="GET" Call="MDG.Request:GetParameters" />
+
+</Routes>
+]]></Data>
+</XData>
+</Class>
+
+
+
+
+
+
+<Class name="spg.generator">
+<Super>%Persistent</Super>
+<TimeChanged>63418,62766.957864</TimeChanged>
+<TimeCreated>63416,34167.120781</TimeCreated>
+
+<Method name="CreateDB">
+<Description><![CDATA[
+from example 
+http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNAME=%25Library.Persistent&CSPCHD=001000000000nKXcBK2T2y0000iNbZdooKtihpdM4Xu2KP1g--&CSPSHARE=1]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Name:%String</FormalSpec>
+<Implementation><![CDATA[
+ w !,"hi2all",!
+ s ns = $namespace, $namespace="%SYS"
+ Set LowName = $ZCVT(Name,"L")
+
+ //Create directories
+ s Path = "c:\temp\__"_Name
+ s PathDB = Path_"\DB"
+ s PathWEB = Path_"\WEB"
+ do $zu(140,9,Path)
+ do $zu(140,9,PathDB)
+ do $zu(140,9,PathWEB)
+ 
+ // Create DataBase File
+ s Status=##Class(SYS.Database).CreateDatabase(PathDB)
+ i '$$$ISOK(Status) w !,"First Error="_$SYSTEM.Status.GetErrorText(Status)
+ s Properties("Directory")=PathDB
+ s Properties("MountRequired")=1
+ 
+ // Mount database to Cache
+ s Status=##Class(Config.Databases).Create(Name,.Properties)
+ i '$$$ISOK(Status) w !,"First Error="_$SYSTEM.Status.GetErrorText(Status)
+  s Properties("MountRequired")=1
+ s Status=##Class(Config.Databases).Modify(Name,.Properties)
+ 
+ // Create NameSpace
+ 			Set nsProperties("Globals") = Name
+			Set nsProperties("Library") = "CACHELIB"
+			Set nsProperties("Routines") = Name
+			Set nsProperties("SysGlobals") = "CACHESYS"
+			Set nsProperties("SysRoutines") = "CACHESYS"
+			Set nsProperties("TempGlobals") = "CACHETEMP"
+			Set tSC = ##Class(Config.Namespaces).Create(Name,.nsProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+ // Create web apps
+ 			Set tSC = ##Class(Security.System).Get(,.secProperties)
+ 			// default
+			Set cspProperties("AutheEnabled") = 64 // secProperties("AutheEnabled")
+			Set cspProperties("NameSpace") = Name
+			Set cspProperties("Path") = PathWEB
+			Set cspProperties("IsNameSpaceDefault") = 1
+			Set tSC = ##Class(Security.Applications).Create("/web/"_LowName,.cspProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+
+ 			// broker
+			Set cspProperties("AutheEnabled") = 64
+			Set cspProperties("NameSpace") = Name
+			Set cspProperties("DispatchClass") = "WEB.Broker"
+			Set cspProperties("IsNameSpaceDefault") = 0
+			Set tSC = ##Class(Security.Applications).Create("/broker/"_LowName,.cspProperties)
+			If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+ 
+ s $namespace=ns 
+
+ Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateClass">
+<Description>
+Cоздание класса</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,obj</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    //TODO: ПРИМЕРЫ ЗАПРОСОВ
+    /*
+    data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          Super: "%Persistent,%Populate",
+          Abstract: "0",
+          Description: "This is TestClass"
+          }
+    */
+    //$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+    //zw obj
+    set sn = $namespace
+    set $namespace = NameSpace //obj.namespace
+    set o = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
+    //Super - тип класса, то что идет после Extends (%Populate,%Persistent, др.классы)
+    set o.Super = obj.Super
+    //Абстрактный или нет (0 или 1)
+    set o.Abstract = obj.Abstract
+    //Описание
+    set o.Description = obj.Description
+    set status = o.%Save() 
+    set $namespace = sn
+    q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CreateProperty">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>obj</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //TODO: ПРИМЕРЫ ЗАПРОСОВ
+      /*
+      data: { namespace: "MDG-DEV",
+          nameClass: "Example.Studio",
+          nameProperty: "test123",
+          Type: "%String",
+          Relationship: "0",
+          Required: "1",
+          Calculated: "0"
+          }
+          */
+      //$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+      set sn = $namespace
+      set $namespace = obj.namespace
+      set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
+      set property.Name = obj.nameProperty
+      //Описание
+      set property.Description = obj.Description
+      //Тип свойства (н-р, %Text)
+      set property.Type = obj.Type
+      //do ##class(MDG.Request).GetParameters()
+       // Коллекция (array или list)
+      set property.Collection = obj.Collection
+      //Отношение (0 или 1)
+      set property.Relationship = obj.Relationship
+      set property.Required = obj.Required
+      set property.Calculated = obj.Calculated
+      set property.Parameters = obj.Parameter
+      set status=property.%Save()
+      set $namespace = sn
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Generate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Package</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      w !,NameSpace," ",Package,!
+      
+      do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package)
+      q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Generate2">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Package</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+      //создаём БД
+      do ..CreateDB(NameSpace)
+      w !,"base created"
+      
+      $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+ 		// получаем список классов и создаём их
+ 		for i=1:1:obj.Size {
+			set Class= obj.Oref(i)
+			w !,"-  ",Class.Properties.Size," p size = ",Class.Name
+            s Class.namespace = NameSpace
+            s Class.nameClass = Package_"."_Class.Name
+            s Class.Super =  "%Persistent,%Populate"
+            s Class.Abstract = "0"
+            s Class.Description = "This is auto generated Class by SPG"
+			//zw Class
+			do ..CreateClass(NameSpace,Class)
+		      // получаем список свойств класса
+		      for j=1:1:Class.Properties.Size {
+			      //zw Property
+			      set Property = Class.Properties.Oref(j)
+                  s Property.namespace = Class.namespace
+                  s Property.nameClass = Class.nameClass
+                  s Property.nameProperty = Property.Name
+			      //w !,"1"
+                  s Property.Type = "%String"
+                  s Property.Relationship = "0"
+                  s Property.Required = "0"
+                  s Property.Calculated = "0"
+                  do ..CreateProperty(Property)
+			      
+			      //w !,"-- j --",Property.Name,!
+ 					}
+ 				}
+ do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package) 
+ q $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^spg.generatorD</DataLocation>
+<DefaultData>generatorDefaultData</DefaultData>
+<IdLocation>^spg.generatorD</IdLocation>
+<IndexLocation>^spg.generatorI</IndexLocation>
+<StreamLocation>^spg.generatorS</StreamLocation>
+<Data name="generatorDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>
