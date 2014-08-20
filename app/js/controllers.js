@@ -85,9 +85,11 @@ angular.module('myApp.controllers', [])
         $scope.Generate = function (Data,Name,Pack){$http.post("/brokerspg/Generate2/"+Name+"/"+Pack,Data)
             .success(function(data){
                 $scope.resultIsOk=0;
+                $scope.inProgress=1;
                 console.log("Финальная генерация произведена ")}).error(function(data,status){
                 console.log("Не генерит :(" + status + data) });
         }
+
         $scope.resultIsOk=1;
         $scope.GeneratePrj = function(){
 

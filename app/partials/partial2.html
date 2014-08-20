@@ -1,21 +1,97 @@
 <!--todo: здесь необходим фильтр запрещающий пробелы, подчёркивания и начинания с цифры-->
 <!--todo: исключить зарезервированные слова-->
-<p>single page generator on cache side</p>
-<div ng-init="resultIsOk=1;Properties = [{'Prop':''}]; ClassList = [{'list':[]}]; Classes = [{'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'',Relationship:'',Required:'',Calculated:''}]}];"/>
-<form class="form-horizontal">
-    <div class="form-group">
+<!--
+<!DOCTYPE html>
+<html lang="ru" ng-app="VACANCY" ng-csp>
+<head>
+    <meta charset="utf-8">
+    <title>{{Page.Menu.BrandTitle}}</title>
+    <script src="//api-maps.yandex.ru/2.0-stable/?load=package.standard&lang=ru-RU" type="text/javascript"></script>
+    <script language = "javascript" src="lib/jQuery/jquery.min.js"></script>
+
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+    <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/mycss/news-sidebar.css" rel="stylesheet" media="screen">
+    <link href="css/mycss/animate.css" rel="stylesheet" media="screen">
+    <script language = "javascript" src="css/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="lib/redactor-js-master/redactor/redactor.css" />
+    <link href="css/mycss/css.css" rel="stylesheet" media="screen">
+
+</head>
+<style>
+    hr{
+        /* color: #f00;*/
+        background-color: rgba(0, 0, 0, 0.04);
+        height: 1px;
+    }
+
+    a{
+        color: #428bca;
+    }
+    a:hover{
+        color: red;
+    }
+
+    .content{
+        margin-top: 70px;
+        width: 100%;
+
+
+        position: absolute;
+        background: url("") no-repeat center center fixed ;
+        background-size: cover;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+    }
+    .full{
+        height: 1080px;
+    }
+
+</style>
+
+-->
+<style>
+    body { padding-top: 100px; }
+    .my-input {
+        -webkit-transition:all linear 0.5s;
+        transition:all linear 0.5s;
+        background: transparent;
+    }
+    .my-input.ng-invalid {
+        color:white;
+        background: #ff7d15;
+    }
+</style>
+<div ng-init="resultIsOk=1;inProgress=1;Properties = [{'Prop':''}]; ClassList = [{'list':[]}]; Classes = [{'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'',Relationship:'',Required:'',Calculated:''}]}];"/>
+<form class="form-horizontal" ng-submit="inProgress=0;GeneratePrj()">
+    <div class="form-group" >
+        <nav class="navbar navbar-inverse navbar-fixed-top " role="navigation">
+
         <div class="form-group">
-            <div class="col-lg-1">
-                <button class="btn btn-default btn-sm" ng-click="GeneratePrj()">Создать {{ProjectName}}</button>
-                <h3 ng-hide="resultIsOk">Проект доступен <a href="/web/{{ProjectName}}/index.html" target = "_blank">/web/{{ProjectName}}/index.html</a></h3>
+            <div class="col-lg-12 container">
+<!--
+                <ul class="nav navbar-nav" >
+                    <li></li>
+                    <li ng-click="GeneratePrj()" class="ProjectName">Автогенерация <b>{{ProjectName}}</li>
+                </ul>
+-->
+                <p class="label label-primary">single page generator on cache side</p>
+                <button class="btn btn-default btn-sm" type="submit">Автогенерация <b>{{ProjectName}}</b></button>
+                <h3 ng-hide="inProgress" class="label label-warning">идёт генерация проекта. пожалуйста подождите</h3>
+                <h3 ng-hide="resultIsOk" class="label label-success">Проект доступен <a href="/web/{{ProjectName}}/index.html" target = "_blank">/web/{{ProjectName}}/index.html</a></h3>
             </div>
         </div>
-
+        </nav>
         <div class="col-lg-12">
+          <!--  <br/><br/><br/>-->
             <label class="col-lg-4" >Название проекта</label>
-            <input type="text" class="form-control " ng-model="ProjectName" placeholder="Project name"/>
+            <!--/^\(?(\d{3})\)?[ .-]?(\d{3})[ .-]?(\d{4})$/-->
+            <!-- http://www.rubular.com/
+            допускаются любые буквы, цифры и знак подчёркивания-->
+            <input type="text" class="form-control my-input" ng-model="ProjectName" ng-pattern="/^[a-zA-Z]\w*$/" placeholder="Project name" required/>
             <label class="col-lg-4" >Название пакета</label>
-            <input type="text" class="form-control " ng-model="PackName" placeholder="Package name"/>
+            <input type="text" class="form-control my-input" ng-model="PackName" placeholder="Package name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
             <hr/>
         </div>
 
@@ -23,7 +99,7 @@
         <div class="col-lg-9">
             <div ng-repeat="Class in Classes">
                 <div class="col-lg-6">
-                    <input type="text" class="form-control " ng-model="Classes[$index].Name" placeholder="Class name"/>
+                    <input type="text" class="form-control my-input" ng-model="Classes[$index].Name" placeholder="Class name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
                 </div>
                 <div class="col-lg-1">
                     <a class="btn btn-default" href ng-click="Classes.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span>{{$index}}</a>
@@ -34,7 +110,7 @@
                     <div class="col-lg-9">
                         <div ng-repeat="Prop in Class.Properties">
                             <div class="col-lg-5">
-                                <input type="text" class="form-control " ng-model="Prop.Name" placeholder="Property name"/>
+                                <input type="text" class="form-control my-input" ng-model="Prop.Name" placeholder="Property name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
                             </div>
                             <div class="col-lg-1">
                                 <a class="btn btn-default" href ng-click="Class.Properties.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span> {{$index}}</a>
@@ -55,6 +131,6 @@
             </div>
         </div>
     </div>
-    <h3>Содержимое</h3>
-    {{Classes}}
+   <!-- <h3>Содержимое</h3>
+    {{Classes}}-->
 </form>
