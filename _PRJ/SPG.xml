@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
-<Project name="SPG" LastModified="2014-08-17 09:33:07.504443">
+<Project name="SPG" LastModified="2014-08-19 18:16:48.847072">
   <Items>
-    <ProjectItem name="Simple.Demo" type="CLS"></ProjectItem>
+    <ProjectItem name="MDG" type="PKG"></ProjectItem>
+    <ProjectItem name="Template" type="PKG"></ProjectItem>
     <ProjectItem name="Template.SPG" type="CLS"></ProjectItem>
-    <ProjectItem name="spg.generator" type="CLS"></ProjectItem>
+    <ProjectItem name="WEB" type="PKG"></ProjectItem>
+    <ProjectItem name="spg" type="PKG"></ProjectItem>
   </Items>
 </Project>
 </Export>
