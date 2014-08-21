@@ -63,7 +63,7 @@
         background: #ff7d15;
     }
 </style>
-<div ng-init="resultIsOk=1;inProgress=1;Properties = [{'Prop':''}]; ClassList = [{'list':[]}]; Classes = [{'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'',Relationship:'',Required:'',Calculated:''}]}];"/>
+<div ng-init="resultIsOk=1;inProgress=1;Properties = [{'Prop':''}]; ClassList = [{'list':[]}]; Classes = [{'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'%String',Relationship:'',Required:'',Calculated:'',Description:''}]}];"/>
 <form class="form-horizontal" ng-submit="inProgress=0;GeneratePrj()">
     <div class="form-group" >
         <nav class="navbar navbar-inverse navbar-fixed-top " role="navigation">
@@ -92,34 +92,49 @@
             <input type="text" class="form-control my-input" ng-model="ProjectName" ng-pattern="/^[a-zA-Z]\w*$/" placeholder="Project name" required/>
             <label class="col-lg-4" >Название пакета</label>
             <input type="text" class="form-control my-input" ng-model="PackName" placeholder="Package name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
-            <hr/>
+           <!-- <hr/>-->
         </div>
 
         <label for="URL" class="col-sm-2 control-label hidden-sm hidden-xs">Классы:</label>
         <div class="col-lg-9">
             <div ng-repeat="Class in Classes">
+                <div class="col-lg-12">
+                    <hr></div>
                 <div class="col-lg-6">
                     <input type="text" class="form-control my-input" ng-model="Classes[$index].Name" placeholder="Class name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
                 </div>
                 <div class="col-lg-1">
-                    <a class="btn btn-default" href ng-click="Classes.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span>{{$index}}</a>
+                    <a class="btn btn-default" href ng-click="Classes.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span> Удалить класс</a>
                 </div>
                 <!-- свойства классов начало-->
                 <div class="form-group">
-                    <label for="URL" class="col-sm-2 control-label hidden-sm hidden-xs">Свойства класса {{Class.Name}}:</label>
+                    <div class="col-lg-12"><label>Свойства класса {{Class.Name}}:</label></div>
                     <div class="col-lg-9">
+                        <div class="col-lg-4" align="center">Название свойства</div>
+                        <div class="col-lg-4"align="center">Описание</div>
+                        <div class="col-lg-3"align="center">Тип</div>
                         <div ng-repeat="Prop in Class.Properties">
-                            <div class="col-lg-5">
+                            <div class="col-lg-4">
                                 <input type="text" class="form-control my-input" ng-model="Prop.Name" placeholder="Property name" required ng-pattern="/^[a-zA-Z]\w*$/"/>
                             </div>
+                            <div class="col-lg-4">
+                                <input type="text" class="form-control my-input" ng-model="Prop.Description" placeholder="Описание свойства"/>
+                            </div>
+                            <div class="col-lg-3">
+                                <select name="PropertyType" class="form-control adminSearchSelAndSelect" ng-model="Prop.Type">
+                                  <option value="%String" selected="selected" ng-selected="true">Строка</option>
+                                  <option value="%Integer">Число</option>
+                                  <option value="%Date">Дата</option>
+                                </select>
+                            </div>
                             <div class="col-lg-1">
-                                <a class="btn btn-default" href ng-click="Class.Properties.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span> {{$index}}</a>
+                                <a class="btn btn-default" href ng-click="Class.Properties.splice($index, 1)"><span class="glyphicon glyphicon-remove"></span></a>
                             </div>
 
                         </div>
-                        <div class="col-lg-12">
-                            <hr style="margin-top: 5px; margin-bottom: 5px">
-                            <a href ng-click="Class.Properties.push({});Console.Log(Class.Properties)"><span class="glyphicon glyphicon-plus"></span></a>
+                        <div class="col-lg-12" align="center">
+                            <hr style="margin-top: 5px; margin-bottom: 5px; align-content: flex-end">
+                            <a href ng-click="Class.Properties.push({});Console.Log(Class.Properties)"><span class="glyphicon glyphicon-plus"></span>свойство</a>
                         </div>
                     </div>
                 </div>
@@ -127,10 +142,10 @@
             </div>
             <div class="col-lg-12">
                 <hr style="margin-top: 5px; margin-bottom: 5px">
-                <a href ng-click="Classes.push({'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'',Relationship:'',Required:'',Calculated:''}]});Console.Log(Classes)"><span class="glyphicon glyphicon-plus"></span></a>
+                <a href ng-click="Classes.push({'Name':'','Properties':[{'Name':'',namespace:'',nameClass:'',Type:'%String',Relationship:'',Required:'',Calculated:'',Description:''}]});Console.Log(Classes)"><span class="glyphicon glyphicon-plus"></span> Класс</a>
             </div>
         </div>
     </div>
-   <!-- <h3>Содержимое</h3>
-    {{Classes}}-->
+    <h3>Содержимое</h3>
+    {{Classes}}
 </form>

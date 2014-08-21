@@ -7,7 +7,7 @@
 </Parameter>
 
 <Parameter name="%DefaultNameSpace">
-<Default>%SYS</Default>
+<Expression>$namespace</Expression>
 </Parameter>
 
 <Method name="%NameSpaceList">
@@ -63,7 +63,6 @@
 <FormalSpec>%WorkNameSpace,%Class:%String</FormalSpec>
 <ReturnType>%ArrayOfDataTypes</ReturnType>
 <Implementation><![CDATA[
-	//w !,"Hell %)"_%WorkNameSpace_" "_%Class
 	ZN %WorkNameSpace
 	set TempList=##class(%ArrayOfDataTypes).%New()
 	set Class=##class(%ClassDefinition).%OpenId(%Class)
@@ -78,10 +77,41 @@
 	    			  		 Class.Properties.GetAt(key).InitialExpression)
 	     
 	     do TempList.SetAt(Class.Properties.GetAt(key).Name,key)
-		
+		 
 	     d Class.Properties.GetNext(.key)	
 	     }
    	ZN ..#%DefaultNameSpace
+   	//set $namespace = sn
+   	//ZW TempList
+	Quit TempList
+]]></Implementation>
+</Method>
+
+<Method name="ListPropertiesOfClass2">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>%WorkNameSpace,%Class:%String</FormalSpec>
+<ReturnType>%ArrayOfDataTypes</ReturnType>
+<Implementation><![CDATA[
+	
+	ZN %WorkNameSpace
+	set TempList=##class(%ArrayOfDataTypes).%New()
+	set Class=##class(%ClassDefinition).%OpenId(%Class)
+	set key=""
+    do Class.Properties.GetNext(.key)
+    while key'="" 
+    	{
+	    	set Property=$LB(Class.Properties.GetAt(key).Name,
+	    			  	     Class.Properties.GetAt(key).Type,
+	    			  		 Class.Properties.GetAt(key).Description,
+	    			  		 Class.Properties.GetAt(key).Collection,
+	    			  		 Class.Properties.GetAt(key).InitialExpression)
+	     
+	     do TempList.SetAt(Property,key)
+		 
+	     d Class.Properties.GetNext(.key)	
+	     }
+   	ZN ..#%DefaultNameSpace
+   	//set $namespace = sn
    	//ZW TempList
 	Quit TempList
 ]]></Implementation>

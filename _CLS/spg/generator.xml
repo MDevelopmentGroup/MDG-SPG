@@ -123,9 +123,12 @@ Cоздание класса</Description>
       set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
       set property.Name = obj.nameProperty
       //Описание
-      set property.Description = obj.Description
+      set property.Description = $ZCONVERT(obj.Description,"I","UTF8")
       //Тип свойства (н-р, %Text)
+      zw property
       set property.Type = obj.Type
+      
+      //w !,property.Type
       //do ##class(MDG.Request).GetParameters()
        // Коллекция (array или list)
       set property.Collection = obj.Collection
@@ -135,6 +138,7 @@ Cоздание класса</Description>
       set property.Calculated = obj.Calculated
       set property.Parameters = obj.Parameter
       set status=property.%Save()
+      w !,"propid - ",property.%Id(),!
       set $namespace = sn
       q $$$OK
 ]]></Implementation>
@@ -181,7 +185,7 @@ Cоздание класса</Description>
                   s Property.nameClass = Class.nameClass
                   s Property.nameProperty = Property.Name
 			      //w !,"1"
-                  s Property.Type = "%String"
+			      if (Property.Type ="%Date"){ s Property.FORMAT = 4 }
                   s Property.Relationship = "0"
                   s Property.Required = "0"
                   s Property.Calculated = "0"

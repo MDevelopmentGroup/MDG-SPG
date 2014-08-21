@@ -92,7 +92,7 @@ angular.module('myApp.controllers', [])
 
         $scope.resultIsOk=1;
         $scope.GeneratePrj = function(){
-
+            $scope.resultIsOk=1;
           /*  var cl = $scope.ClassList;
             cl.list =  $scope.Classes;
             cl.namespace = $scope.ProjectName;

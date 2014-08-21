@@ -5,7 +5,7 @@
 <TimeCreated>63264,57137.71731</TimeCreated>
 
 <Parameter name="%DefaultNameSpace">
-<Default>%SYS</Default>
+<Expression>$namespace</Expression>
 </Parameter>
 
 <Method name="%Compile">

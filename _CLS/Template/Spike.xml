@@ -5,7 +5,7 @@
 <TimeCreated>63406,37652.223916</TimeCreated>
 
 <Parameter name="%DefaultNameSpace">
-<Default>%SYS</Default>
+<Expression>$namespace</Expression>
 </Parameter>
 
 <Method name="GetPath">
@@ -74,7 +74,6 @@
 <FormalSpec>NameSpace,Package,location="C:\InterSystems\Cache\CSP"</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-		w !,"TEST",!
 		s defaultPath = ""
 		s ns = $namespace
 		if location="C:\InterSystems\Cache\CSP" {
@@ -98,12 +97,15 @@
 		#define t3 $C(10,9,9,9)
 		#define t2 $C(10,9,9)
 		#define t1 $C(10,9)
+		#define css "<style>.my-input {-webkit-transition:all linear 0.5s; transition:all linear 0.5s; background: transparent;}.my-input.ng-invalid {color:white;background: #ff7d15;}</style>"
 		#define div(%name) "<div class='"_%name_"'>"
 		#define div2(%name,%body) $$$t1_"<div class='"_%name_"'>"_$$$t3_%body_$$$t2_"</div>"
 		#define label(%name) $$$t3_"<label class='col-lg-4 control-label' for='"_%name_"'>"_%name_"</label>"
-		#define inputform(%name,%prop) $$$div2("form-group",$$$label(%prop)_$$$div2("col-lg-8","<input type='text' id='Comment' class='form-control' ng-model='"_%name_"."_%prop_"' placeholder='"_%prop_"' >"))
+		#define inputform(%name,%prop,%descr,%typecontrol) $$$div2("form-group",$$$label(%prop)_$$$div2("col-lg-8","<input type='text' id='Comment' class='form-control my-input' ng-model='"_%name_"."_%prop_"' placeholder='"_%descr_"' "_%typecontrol_" >"))
+		#define pattern " ng-pattern='/^\d*$/' "
+		#define datepicker " data-date-type='string' data-max-date='today' data-autoclose='1' bs-datepicker "
+		
 		//w !,"***** NS-"_NameSpace," P-",Package," L-",location," jsP-",jsPath,"-"
-
 		s File=##class(%File).%New()
 		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\css\"),st=File.%Save()
 		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\lib\"),st=File.%Save()
@@ -125,7 +127,7 @@
 		d ..SaveToFile(location_"\index.html",index)
 		
 		s Factory="angular.module('FactoryModule',[])"
-		s App="angular.module('"_Package_"',['ngCookies','ngResource','ngRoute','ngSanitize','ngAnimate','FactoryModule'"_$C(10)_
+		s App="angular.module('"_Package_"',['ngCookies','ngResource','ngRoute','ngSanitize','ngAnimate','mgcrea.ngStrap','FactoryModule'"_$C(10)_
 		"]).config(['$routeProvider',  function($routeProvider) { $routeProvider."
 		s menu="<ul class='nav nav-pills nav-stacked'>"
 		//#dim ClassList As %ArrayOfDataTypes
@@ -141,16 +143,43 @@
  					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%New()"_$C(10)
  					
  					s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)	
-					s PartialCRUD=$$$div("well")_$$$t1_$$$div("row")_$$$t1_$$$div("col-lg-8")_
+ 					s pl=##class(Template.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
+ 					
+					s PartialCRUD=$$$css_$c(10)_$$$div("well")_$$$t1_$$$div("row")_$$$t1_$$$div("col-lg-8")_
 					$$$t2_"<form class='form-horizontal' ng-model='"_ClassName_"' ng-submit='Submit("_ClassName_")'>"
     					for key=1:1:PropertyList.Count()
     					 
     					{
 	    				 s Property=PropertyList.GetAt(key)
- 						 s TempCreate=TempCreate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
-	    				 s PartialCRUD=PartialCRUD_$$$inputform(ClassName,Property)
+	    				 s Property2=pl.GetAt(key)
+	    				 s PropertyType = $lg(Property2,2)
+	    				 s PropertyDescr = $ZCONVERT($lg(Property2,3),"O","UTF8")
+	    				
+
+	    				 	  s Add=""
+		    				  s AddP="$ZCONVERT("
+		    				  s AddP2=",""I"",""UTF8"")"
+	    				 if ($lf(Property2,"%Integer")>0) {
+		    				  w !,"!!!INT!!!" 
+		    				  s Add=$$$pattern
+		    				  }
+	    				 
+	    				 //elseif ($lf(Property2,"%Date")>0) {
+		    			elseif (PropertyType="%Date">0) {	 
+		    				 
+							  w !,"DATE!!"
+							  s Add=$$$datepicker
+		    				  s AddP="$ZDATEH("
+		    				  s AddP2=",4)"}
+
+	    				 s PartialCRUD=PartialCRUD_$$$inputform(ClassName,Property,PropertyDescr,Add)
+
+ 						 //s TempCreate=TempCreate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
+ 						 s TempCreate=TempCreate_$C(9)_"set "_ClassName_"."_Property_"="_AddP_"obj."_Property_AddP2_" //cr"_$C(10)
+
  					     w !, "формируем модифицирующие партиции"			 
  						 }
+ 						 
  					s PartialCRUD=PartialCRUD_"<div class='form-group'>"_$$$t2_
 			  		"<label class='col-lg-4 control-label'></label>"_$$$t2_
 			    	"<div class='col-lg-8'>"_$$$t2_
@@ -167,6 +196,9 @@
  					$C(9)_"$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))"_$C(10)_
  					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%OpenId(obj.ID)"_$C(10)
  					 s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)
+					 
+					 s pl=##class(Template.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
+
 					 s Partial="<div class='col-lg-10'>"_$$$t2_
                 		"<input type='text' id='appendedInput'  ng-model='filterApp' placeholder='Search string'>"_$$$t2_
                 		"<span class='add-on'><i class='icon-filter'></i></span>"_$C(10)_"</div>"_
@@ -178,7 +210,17 @@
     					 
     					{
 	    				 s Property=PropertyList.GetAt(key)
-    					 s TempUpdate=TempUpdate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
+	    				 s Property2=pl.GetAt(key)
+		    				  s AddP="$ZCONVERT("
+		    				  s AddP2=",""I"",""UTF8"")"
+
+	    				 if ($lf(Property2,"%Date")>0) {
+		    				  s AddP="$ZDATEH("
+		    				  s AddP2=",4)"}
+ 						 //s TempCreate=TempCreate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
+ 						 s TempUpdate=TempUpdate_$C(9)_"set "_ClassName_"."_Property_"="_AddP_"obj."_Property_AddP2_$C(10)
+	    				 
+    					 //s TempUpdate=TempUpdate_$C(9)_"set "_ClassName_"."_Property_"=$ZCONVERT(obj."_Property_",""I"",""UTF8"")"_$C(10)
     					 w !, "формируем визуализирующие партиции"			 
 						 s Partial=Partial_" {{"_ClassName_"."_Property_"}} </br>"
  						 }
@@ -244,7 +286,8 @@
 			
 			
 		}
-		s App=App_"otherwise({redirectTo: '/"_ClassName_"'});}]);"_$C(10)
+		s App=App_"otherwise({redirectTo: '/"_ClassName_"'});}])"_$C(10)
+		s App=App_".config(function($datepickerProvider) { angular.extend($datepickerProvider.defaults, { dateFormat: 'MM/dd/yyyy', startWeek: 1 }); }) .config(function($timepickerProvider) { angular.extend($timepickerProvider.defaults, { timeFormat: 'HH:mm:ss', length: 4 }); })"
 		s menu=menu_"</ul>"_$C(10)
 		s XDATA=XDATA_$C(9)_"</Routes>"_$C(10),st=##class(Template.Class).%CreateClass(NameSpace,"WEB.Broker","%CSP.REST")
 		s st= ##class(Template.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Write(XDATA) //, XDATA=""
