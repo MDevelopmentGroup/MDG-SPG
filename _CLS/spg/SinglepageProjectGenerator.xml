@@ -1,5 +1,60 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="spg.SinglepageProjectGenerator">
+<Description>
+[EN]
+Web part of Single page Project Generator
+If you export this project from XML and check 'compile', just press F5 to start working
+Oterwithe, to start  - comile project by pressing F7, then press F5 in studio
+[RU]
+Веб часть генерации
+Если брокер для данной области не обнаружен - он будет создан
+Для начала работы - откомпилируйте проект и нажмите F5 в студии
+Для полноценной работы должен быть доступен сайт http://akvant.pro/scrumbler/index.html
+На нём хранятся используемые библиотеки или же скачайте и распакуйте
+в локальную директорию файл http://akvant.pro/scrumbler/template.zip
+указав абсолютный или относительный путь к ней в переменной fullpath</Description>
+<Super>%Persistent,%CSP.Page</Super>
+<TimeCreated>63425,43877.404724</TimeCreated>
 
+<UDLText name="T">
+<Content><![CDATA[
+// в текущей области создаём брокера для работы с проектом	
+
+]]></Content>
+</UDLText>
+
+<Method name="CreateBroker">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>broker</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+ s ns = $namespace, $namespace="%SYS"
+ set st=##class(Security.Applications).Get(broker,.CSP)
+ if st '=1 {
+  w !,"Создан брокер "_broker_" для области "_ns
+  Set cspProperties("AutheEnabled") = 64
+  Set cspProperties("NameSpace") = ns
+  Set cspProperties("DispatchClass") = "WEB.Broker"
+  Set cspProperties("IsNameSpaceDefault") = 0
+  Set tSC = ##Class(Security.Applications).Create(broker,.cspProperties)
+  If $$$ISERR(tSC) throw ##Class(%Exception.StatusException).CreateFromStatus(tSC)
+ }
+ s $namespace=ns
+]]></Implementation>
+</Method>
+
+<Method name="OnPage">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim fullpath = "http://akvant.pro/scrumbler/template/"
+	#dim broker="/brokerspg777"
+	d ..CreateBroker(broker)
+
+	//s fullpath="templ/"
+	&html<
+<!DOCTYPE html>
 <html ng-app="myApp">
 <head>
     <meta charset="utf-8">
@@ -7,9 +62,9 @@
     <title>##SPG</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/app.css"/>
-    <link href="css/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap/css/bootstrap-additions.min.css" rel="stylesheet">
+    <!--<link rel="stylesheet" href="css/app.css"/>-->
+    <link href="#(fullpath)#css/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!--<link href="#(fullpath)#css/bootstrap/css/bootstrap-additions.min.css" rel="stylesheet">-->
 </head>
 <body>
 <!--[if lt IE 7]>
@@ -118,13 +173,13 @@
          Генератор.Конец
 ********************************
 -->
-<script src="lib/jquery/jquery-2.1.1.min.js"></script>
-<script src="lib/angular/angular.min.js"></script>
-<script src="lib/angular/angular-route.min.js"></script>
-<script src="lib/angular/angular-animate.min.js"></script>
-<script src="css/bootstrap/js/bootstrap.min.js"></script>
+<script src="#(fullpath)#lib/jquery/jquery-2.1.1.min.js"></script>
+<script src="#(fullpath)#lib/angular/angular.min.js"></script>
+<script src="#(fullpath)#lib/angular/angular-route.min.js"></script>
+<script src="#(fullpath)#lib/angular/angular-animate.min.js"></script>
+<script src="#(fullpath)#css/bootstrap/js/bootstrap.min.js"></script>
 <script language="JavaScript">
-    'use strict';
+    //'use strict';
 
     angular.module('myApp', [
         'ngRoute',
@@ -133,11 +188,11 @@
 
 </script>
 <script language="JavaScript">
-    'use strict';
+    //'use strict';
     /* Controllers */
     angular.module('myApp.controllers', [])
             .controller('MyCtrl2', ['$scope','$http', function($scope,$http) {
-                $scope.Generate = function (Data,Name,Pack){$http.post("/brokerspg/Generate2/"+Name+"/"+Pack,Data)
+                $scope.Generate = function (Data,Name,Pack){$http.post("#(broker)#/Generate2/"+Name+"/"+Pack,Data)
                         .success(function(data){
                             $scope.resultIsOk=0;
                             $scope.inProgress=1;
@@ -157,3 +212,23 @@
 </script>
 </body>
 </html>
+	>
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^spg.SinglepageP3FF7D</DataLocation>
+<DefaultData>SinglepageProjectGeneratorDefaultData</DefaultData>
+<IdLocation>^spg.SinglepageP3FF7D</IdLocation>
+<IndexLocation>^spg.SinglepageP3FF7I</IndexLocation>
+<StreamLocation>^spg.SinglepageP3FF7S</StreamLocation>
+<Data name="SinglepageProjectGeneratorDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

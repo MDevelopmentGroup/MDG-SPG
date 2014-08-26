@@ -13,17 +13,17 @@
     <Route Url="/Generate/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate" />
     <Route Url="/Generate2/:NameSpace/:Package" Method="POST" Call="spg.generator:Generate2" />
  
-    <Route Url="/namespaces" Method="GET" Call="MDG.Request:GetNamespaces" />
-    <Route Url="/namespaces/:namespace" Method="GET" Call="MDG.Request:GetClassList" />
-    <Route Url="/namespaces/:namespace/:classname" Method="GET" Call="MDG.Request:GetClass" />
-    <Route Url="/namespaces/:namespace/:classname" Method="PUT" Call="MDG.Request:PutClass" />
-    <Route Url="/updateclass" Method="POST" Call="MDG.Request:UpdateClass" />
-    <Route Url="/createclass" Method="POST" Call="MDG.Request:CreateClass" />
-    <Route Url="/compilationclass" Method="POST" Call="MDG.Request:CompilationClass" />
-    <Route Url="/deleteclass" Method="POST" Call="MDG.Request:DeleteClass" />
-    <Route Url="/createmethod" Method="POST" Call="MDG.Request:CreateMethod" />
-    <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
-    <Route Url="/getparameter/:type1" Method="GET" Call="MDG.Request:GetParameters" />
+    <Route Url="/namespaces" Method="GET" Call="spg.Request:GetNamespaces" />
+    <Route Url="/namespaces/:namespace" Method="GET" Call="spg.Request:GetClassList" />
+    <Route Url="/namespaces/:namespace/:classname" Method="GET" Call="spg.Request:GetClass" />
+    <Route Url="/namespaces/:namespace/:classname" Method="PUT" Call="spg.Request:PutClass" />
+    <Route Url="/updateclass" Method="POST" Call="spg.Request:UpdateClass" />
+    <Route Url="/createclass" Method="POST" Call="spg.Request:CreateClass" />
+    <Route Url="/compilationclass" Method="POST" Call="spg.Request:CompilationClass" />
+    <Route Url="/deleteclass" Method="POST" Call="spg.Request:DeleteClass" />
+    <Route Url="/createmethod" Method="POST" Call="spg.Request:CreateMethod" />
+    <Route Url="/createproperty" Method="POST" Call="spg.Request:CreateProperty" />
+    <Route Url="/getparameter/:type1" Method="GET" Call="spg.Request:GetParameters" />
 
 </Routes>
 ]]></Data>

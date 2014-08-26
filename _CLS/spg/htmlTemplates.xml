@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="spg.htmlTemplates">
+<Super>%Persistent</Super>
+<TimeCreated>63425,50324.76545</TimeCreated>
+
+<Method name="IndexT">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>path,app</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+ &html<
+<!DOCTYPE html>
+<html ng-app='#(app)#'>
+<head lang='en'>
+<meta charset='UTF-8'>
+<script src='#(path)#lib/jquery/jquery-2.1.1.min.js'></script>
+<link href='#(path)#css/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+<script src='#(path)#css/bootstrap/js/bootstrap.min.js'></script>
+<title>#(app)#.WEB Auto Project</title>
+</head>
+<body>
+<script src='#(path)#lib/angular/angular.min.js'></script>
+<script src='#(path)#lib/angular/angular-route.min.js'></script>
+<script src='#(path)#lib/angular/angular-resource.min.js'></script>
+<script src='#(path)#lib/angular/angular-cookies.min.js'></script>
+<script src='#(path)#lib/angular/angular-sanitize.min.js'></script>
+<script src='#(path)#lib/angular/angular-mocks.js'></script>
+<script src='#(path)#lib/angular/angular-loader.min.js'></script>
+<script src='#(path)#lib/angular/angular-animate.min.js'></script>
+<script src='#(path)#lib/angular-strap/angular-strap.min.js'></script>
+<script src='#(path)#lib/angular-strap/angular-strap.tpl.min.js'></script>
+<script src='js/controller.js'></script>
+<script src='js/factory.js'></script>
+<script src='js/app.js'>
+</script>
+<div class='row'>
+	<div class='col-lg-2' ng-include="'partials/menu.html'"></div>
+	<div class='col-lg-10' ng-view></div>
+</div>
+</body>
+</html> 
+ >
+ Q ""
+]]></Implementation>
+</Method>
+
+<Method name="GenerateIndex">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>filename,path,app</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+  o filename:"WNUK\CP1251\" ;не помню в какую сторону \
+  u filename 
+  d ..IndexT(path,app)
+  c filename
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^spg.htmlTemplatesD</DataLocation>
+<DefaultData>htmlTemplatesDefaultData</DefaultData>
+<IdLocation>^spg.htmlTemplatesD</IdLocation>
+<IndexLocation>^spg.htmlTemplatesI</IndexLocation>
+<StreamLocation>^spg.htmlTemplatesS</StreamLocation>
+<Data name="htmlTemplatesDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

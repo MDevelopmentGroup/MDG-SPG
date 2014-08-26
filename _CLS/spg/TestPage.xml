@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="spg.TestPage">
+<Description>
+Тестим инклуд чего то в HTML</Description>
+<Super>%Persistent,%CSP.Page</Super>
+<TimeCreated>63421,62220.744114</TimeCreated>
+
+<Parameter name="CONTENTTYPE">
+<Default>text/html</Default>
+</Parameter>
+
+<Method name="OnPage">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+ d ..htmlTest(10)
+ q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="htmlTest">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>yy</FormalSpec>
+<Implementation><![CDATA[
+ 
+  For i=1:1:yy{
+  &html< 
+  
+  <h1>x is #(i)# y #(yy)#</h1>
+  
+  >
+  }
+]]></Implementation>
+</Method>
+
+<Method name="TestFile">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+		S stream=##class(%FileCharacterStream).%New()
+		S stream.Filename="http://www.akvant.pro/scrumbler/index.html"
+		//читаем весь файл
+		s index="<!DOCTYPE html>"_$C(10)_"<html ng-app='TEST'>"_$C(10)
+		S index=index_stream.Read(stream.Size)
+		d ..SaveToFile("c:\temp\index.html",index)
+]]></Implementation>
+</Method>
+
+<Method name="SaveToFile">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>filePath:%String,body:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+		s fileM=##class(%Stream.FileBinary).%New()
+		s fileM.Filename=filePath
+		s st=fileM.Write(body)
+		s st=fileM.%Save()
+		k fileM
+ 		q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="wTemplate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&params:%String]]></FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+ &html<<div>#(params)#</div><script language="javascript"></script>>
+ &js<var z=#(params)#;>
+ Q ""
+]]></Implementation>
+</Method>
+
+<Method name="Generate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>filename</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+  o filename:"WNUK\CP1251\" ;не помню в какую сторону \
+  u filename 
+  w !,"3Abra kadabra",!
+  d ..wTemplate("Hello")
+  w !,"2Ahalai mahalay",!
+  c filename
+  w !,"ZZZZ",!
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^spg.TestPageD</DataLocation>
+<DefaultData>TestPageDefaultData</DefaultData>
+<IdLocation>^spg.TestPageD</IdLocation>
+<IndexLocation>^spg.TestPageI</IndexLocation>
+<StreamLocation>^spg.TestPageS</StreamLocation>
+<Data name="TestPageDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>children</Value>
+</Value>
+<Value name="3">
+<Value>disabled</Value>
+</Value>
+<Value name="4">
+<Value>%partial</Value>
+</Value>
+<Value name="5">
+<Value>error</Value>
+</Value>
+<Value name="6">
+<Value>cellAlign</Value>
+</Value>
+<Value name="7">
+<Value>cellVAlign</Value>
+</Value>
+<Value name="8">
+<Value>%page</Value>
+</Value>
+<Value name="9">
+<Value>labelPosition</Value>
+</Value>
+<Value name="10">
+<Value>groupStyle</Value>
+</Value>
+<Value name="11">
+<Value>cellStyle</Value>
+</Value>
+<Value name="12">
+<Value>groupClass</Value>
+</Value>
+<Value name="13">
+<Value>%condition</Value>
+</Value>
+<Value name="14">
+<Value>%resource</Value>
+</Value>
+<Value name="15">
+<Value>%import</Value>
+</Value>
+<Value name="16">
+<Value>%includeFiles</Value>
+</Value>
+<Value name="17">
+<Value>index</Value>
+</Value>
+<Value name="18">
+<Value>id</Value>
+</Value>
+<Value name="19">
+<Value>dragEnabled</Value>
+</Value>
+<Value name="20">
+<Value>aux</Value>
+</Value>
+<Value name="21">
+<Value>onbeforedrag</Value>
+</Value>
+<Value name="22">
+<Value>ondrag</Value>
+</Value>
+<Value name="23">
+<Value>onafterdrag</Value>
+</Value>
+<Value name="24">
+<Value>ondrop</Value>
+</Value>
+<Value name="25">
+<Value>containerStyle</Value>
+</Value>
+<Value name="26">
+<Value>align</Value>
+</Value>
+<Value name="27">
+<Value>useSVG</Value>
+</Value>
+<Value name="28">
+<Value>inlineSVG</Value>
+</Value>
+<Value name="29">
+<Value>height</Value>
+</Value>
+<Value name="30">
+<Value>isSoftModal</Value>
+</Value>
+<Value name="31">
+<Value>enclosingClass</Value>
+</Value>
+<Value name="32">
+<Value>enclosingStyle</Value>
+</Value>
+<Value name="33">
+<Value>lastModalIndex</Value>
+</Value>
+<Value name="34">
+<Value>%xmlOutputMode</Value>
+</Value>
+<Value name="35">
+<Value>SVGClassList</Value>
+</Value>
+<Value name="36">
+<Value>%UserPackageList</Value>
+</Value>
+<Value name="37">
+<Value>UserSVGPackageList</Value>
+</Value>
+<Value name="38">
+<Value>backgroundTimerInterval</Value>
+</Value>
+<Value name="39">
+<Value>zenPersistentPopup</Value>
+</Value>
+<Value name="40">
+<Value>onoverlay</Value>
+</Value>
+<Value name="41">
+<Value>designMode</Value>
+</Value>
+<Value name="42">
+<Value>cssLevel</Value>
+</Value>
+<Value name="43">
+<Value>useSoftModals</Value>
+</Value>
+<Value name="44">
+<Value>cellSize</Value>
+</Value>
+<Value name="45">
+<Value>composite</Value>
+</Value>
+<Value name="46">
+<Value>dragAndDrop</Value>
+</Value>
+<Value name="47">
+<Value>dropEnabled</Value>
+</Value>
+<Value name="48">
+<Value>dynamic</Value>
+</Value>
+<Value name="49">
+<Value>hidden</Value>
+</Value>
+<Value name="50">
+<Value>hint</Value>
+</Value>
+<Value name="51">
+<Value>hintClass</Value>
+</Value>
+<Value name="52">
+<Value>hintStyle</Value>
+</Value>
+<Value name="53">
+<Value>isPopup</Value>
+</Value>
+<Value name="54">
+<Value>label</Value>
+</Value>
+<Value name="55">
+<Value>labelClass</Value>
+</Value>
+<Value name="56">
+<Value>labelDisabledClass</Value>
+</Value>
+<Value name="57">
+<Value>labelStyle</Value>
+</Value>
+<Value name="58">
+<Value>layout</Value>
+</Value>
+<Value name="59">
+<Value>name</Value>
+</Value>
+<Value name="60">
+<Value>nextIndex</Value>
+</Value>
+<Value name="61">
+<Value>onclick</Value>
+</Value>
+<Value name="62">
+<Value>onhide</Value>
+</Value>
+<Value name="63">
+<Value>onrefresh</Value>
+</Value>
+<Value name="64">
+<Value>onshow</Value>
+</Value>
+<Value name="65">
+<Value>onupdate</Value>
+</Value>
+<Value name="66">
+<Value>overlayMode</Value>
+</Value>
+<Value name="67">
+<Value>parent</Value>
+</Value>
+<Value name="68">
+<Value>popupParent</Value>
+</Value>
+<Value name="69">
+<Value>renderFlag</Value>
+</Value>
+<Value name="70">
+<Value>showLabel</Value>
+</Value>
+<Value name="71">
+<Value>slice</Value>
+</Value>
+<Value name="72">
+<Value>title</Value>
+</Value>
+<Value name="73">
+<Value>tuple</Value>
+</Value>
+<Value name="74">
+<Value>valign</Value>
+</Value>
+<Value name="75">
+<Value>visible</Value>
+</Value>
+<Value name="76">
+<Value>width</Value>
+</Value>
+<Value name="77">
+<Value>window</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

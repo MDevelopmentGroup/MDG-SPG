@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
-<Class name="Template.Spike">
+<Class name="spg.Spike">
 <Super>%Persistent</Super>
-<TimeCreated>63406,37652.223916</TimeCreated>
+<TimeCreated>63425,50447.406683</TimeCreated>
 
 <Parameter name="%DefaultNameSpace">
 <Expression>$namespace</Expression>
@@ -67,7 +67,7 @@
 ]]></Implementation>
 </Method>
 
-<Method name="CreateCacheMethodsX">
+<Method name="CreateCacheMethods">
 <Description>
 В случае наличия броекра - подтягивает и его</Description>
 <ClassMethod>1</ClassMethod>
@@ -132,7 +132,7 @@
 		"]).config(['$routeProvider',  function($routeProvider) { $routeProvider."
 		s menu="<ul class='nav nav-pills nav-stacked'>"
 		//#dim ClassList As %ArrayOfDataTypes
-		s ClassList=##class(Template.Util).%SubClassList(NameSpace,Package),XDATA=$C(9)_"<Routes>"_$C(10)
+		s ClassList=##class(spg.Util).%SubClassList(NameSpace,Package),XDATA=$C(9)_"<Routes>"_$C(10)
 		// надо ли?
 		s temp=##class(%Stream.TmpCharacter).%New()
 		f i=0:1:ClassList.Count()-1 {
@@ -143,8 +143,8 @@
 			"$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))"_$C(10)_
  					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%New()"_$C(10)
  					
- 					s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)	
- 					s pl=##class(Template.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
+ 					s PropertyList=##class(spg.Util).%ListPropertiesOfClass(NameSpace,FullClassName)	
+ 					s pl=##class(spg.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
  					
 					s PartialCRUD=$$$css_$c(10)_$$$div("well")_$$$t1_$$$div("row")_$$$t1_$$$div("col-lg-8")_
 					$$$t2_"<form class='form-horizontal' ng-model='"_ClassName_"' ng-submit='Submit("_ClassName_")'>"
@@ -192,13 +192,13 @@
 
  					s TempCreate=TempCreate_$C(9)_"$$$THROWONERROR(st,"_ClassName_".%Save())"_$C(10)_$C(9)_"} catch ex{set st=ex.AsStatus()}"_$C(10)_$C(9)_"quit st"
  			s st=temp.Write(TempCreate),TempCreate=""
- 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Create","","%Status",temp,"Create "_FullClassName), st=temp.Clear()
+ 			s st=##class(spg.Class).%CreateMethod(NameSpace,FullClassName,"Create","","%Status",temp,"Create "_FullClassName), st=temp.Clear()
  			s TempUpdate=$C(9)_"set st=$$$OK"_$C(10)_$C(9)_"try{"_$C(10)_
  					$C(9)_"$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))"_$C(10)_
  					$C(9)_"set "_ClassName_"=##class("_FullClassName_").%OpenId(obj.ID)"_$C(10)
- 					 s PropertyList=##class(Template.Util).%ListPropertiesOfClass(NameSpace,FullClassName)
+ 					 s PropertyList=##class(spg.Util).%ListPropertiesOfClass(NameSpace,FullClassName)
 					 
-					 s pl=##class(Template.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
+					 s pl=##class(spg.Util).ListPropertiesOfClass2(NameSpace,FullClassName)	
 
 					 s Partial="<div class='col-lg-10'>"_$$$t2_
                 		"<input type='text' id='appendedInput'  ng-model='filterApp' placeholder='Search string'>"_$$$t2_
@@ -233,24 +233,24 @@
  						 d ..SaveToFile(partPath_"View"_ClassName_".html",Partial)
  			 		s TempUpdate=TempUpdate_$C(9)_"$$$THROWONERROR(st,"_ClassName_".%Save())"_$C(10)_$C(9)_"} catch ex{set st=ex.AsStatus()}"_$C(10)_$C(9)_"quit st"
  			s st=temp.Write(TempUpdate),TempUpdate=""
- 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Update","","%Status",temp,"Update "_FullClassName), st=temp.Clear()
+ 			s st=##class(spg.Class).%CreateMethod(NameSpace,FullClassName,"Update","","%Status",temp,"Update "_FullClassName), st=temp.Clear()
  			s TempGet=$C(9)_"set sql=""select * from "_FullClassName_"  where ID=""_ID"_$C(10)_$C(9)_"do ##class(%ZEN.Auxiliary.jsonSQLProvider).%WriteJSONFromSQL(,sql)"_$C(10)_$C(9)_"Q $$$OK"
  			s st=temp.Write(TempGet),TempGet=""
- 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Get","ID","%Status",temp,"Get "_FullClassName), st=temp.Clear()
+ 			s st=##class(spg.Class).%CreateMethod(NameSpace,FullClassName,"Get","ID","%Status",temp,"Get "_FullClassName), st=temp.Clear()
  			s TempGetAll=$C(9)_"set sql=""select * from "_FullClassName_""""_$C(10)_$C(9)_"do ##class(%ZEN.Auxiliary.jsonSQLProvider).%WriteJSONFromSQL(,sql)"_$C(10)_$C(9)_"Q $$$OK"
  			s st=temp.Write(TempGetAll),TempGetAll=""
- 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"GetAll","","%Status",temp,"GetAll "_FullClassName), st=temp.Clear()
+ 			s st=##class(spg.Class).%CreateMethod(NameSpace,FullClassName,"GetAll","","%Status",temp,"GetAll "_FullClassName), st=temp.Clear()
  			
  			s TempDelete=$C(9)_"Q ##class("_FullClassName_").%DeleteId(ID)"
  			s st=temp.Write(TempDelete),TempDelete=""
- 			s st=##class(Template.Class).%CreateMethod(NameSpace,FullClassName,"Delete","ID","%Status",temp,"Delete "_FullClassName), st=temp.Clear()
+ 			s st=##class(spg.Class).%CreateMethod(NameSpace,FullClassName,"Delete","ID","%Status",temp,"Delete "_FullClassName), st=temp.Clear()
 			
 			s XDATA=XDATA_$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Create"" Method=""POST"" 	Call="""_FullClassName_":Create""/>"_$C(10)_
 			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Update"" Method=""POST"" 	Call="""_FullClassName_":Update""/>"_$C(10)_
 			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/GetAll"" Method=""GET"" 	Call="""_FullClassName_":GetAll""/>"_$C(10)_
 			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Get/:ID"" Method=""GET"" 	Call="""_FullClassName_":Get""/>"_$C(10)_
 			$C(9)_$C(9)_"<Route Url=""/"_ClassName_"/Delete/:ID"" Method=""DELETE"" 	Call="""_FullClassName_":Delete""/>"_$C(10)
-			d ##class(Template.Class).%Compile(NameSpace,FullClassName)
+			d ##class(spg.Class).%Compile(NameSpace,FullClassName)
 			w !,"*****"_$C(10)_FullClassName_$C(10)_"*******"
 			
 			s Factory=Factory_$$$t1_".factory('"_ClassName_"Factory',['$http',function($http){"_"return {"_$$$t2_
@@ -290,13 +290,13 @@
 		s App=App_"otherwise({redirectTo: '/"_ClassName_"'});}])"_$C(10)
 		s App=App_".config(function($datepickerProvider) { angular.extend($datepickerProvider.defaults, { dateFormat: 'MM/dd/yyyy', startWeek: 1 }); }) .config(function($timepickerProvider) { angular.extend($timepickerProvider.defaults, { timeFormat: 'HH:mm:ss', length: 4 }); })"
 		s menu=menu_"</ul>"_$C(10)
-		s XDATA=XDATA_$C(9)_"</Routes>"_$C(10),st=##class(Template.Class).%CreateClass(NameSpace,"WEB.Broker","%CSP.REST")
-		s st= ##class(Template.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Write(XDATA) //, XDATA=""
+		s XDATA=XDATA_$C(9)_"</Routes>"_$C(10),st=##class(spg.Class).%CreateClass(NameSpace,"WEB.Broker","%CSP.REST")
+		s st= ##class(spg.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Write(XDATA) //, XDATA=""
 		zn NameSpace
 		s XD=##class(%Dictionary.XDataDefinition).%New("WEB.Broker"),XD.Name="UrlMap", st=XD.Data.Write(XDATA),st=XD.%Save()
 		zn ..#%DefaultNameSpace
 
-		s st= ##class(Template.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Clear()
+		s st= ##class(spg.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Clear()
   
  		d ..SaveToFile(jsPath_"controller.js",Controller)
 		d ..SaveToFile(jsPath_"factory.js",Factory)
@@ -313,27 +313,13 @@
 ]]></Implementation>
 </Method>
 
-<UDLText name="T">
-<Content><![CDATA[
-// CreateCacheMethods
-
-]]></Content>
-</UDLText>
-
-<UDLText name="T">
-<Content><![CDATA[
-// Class
-
-]]></Content>
-</UDLText>
-
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
-<DataLocation>^Template.SpikeD</DataLocation>
+<DataLocation>^spg.SpikeD</DataLocation>
 <DefaultData>SpikeDefaultData</DefaultData>
-<IdLocation>^Template.SpikeD</IdLocation>
-<IndexLocation>^Template.SpikeI</IndexLocation>
-<StreamLocation>^Template.SpikeS</StreamLocation>
+<IdLocation>^spg.SpikeD</IdLocation>
+<IndexLocation>^spg.SpikeI</IndexLocation>
+<StreamLocation>^spg.SpikeS</StreamLocation>
 <Data name="SpikeDefaultData">
 <Value name="1">
 <Value>%%CLASSNAME</Value>

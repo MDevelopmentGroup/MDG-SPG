@@ -11,7 +11,7 @@ http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=%25sys&CLASSNA
 <ClassMethod>1</ClassMethod>
 <FormalSpec>Name:%String</FormalSpec>
 <Implementation><![CDATA[
- w !,"hi2all",!
+ // w !,"hi2all",!
  s ns = $namespace, $namespace="%SYS"
  Set LowName = $ZCVT(Name,"L")
 
@@ -125,7 +125,7 @@ Cоздание класса</Description>
       //Описание
       set property.Description = $ZCONVERT(obj.Description,"I","UTF8")
       //Тип свойства (н-р, %Text)
-      zw property
+      //zw property
       set property.Type = obj.Type
       
       //w !,property.Type
@@ -194,7 +194,7 @@ Cоздание класса</Description>
 			      //w !,"-- j --",Property.Name,!
  					}
  				}
- do ##class(Template.Spike).CreateCacheMethods(NameSpace,Package) 
+ do ##class(spg.Spike).CreateCacheMethods(NameSpace,Package) 
  q $$$OK
 ]]></Implementation>
 </Method>
