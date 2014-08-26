@@ -70,8 +70,6 @@ On the page:
 
 ## After you click Autocreate button. 
 Project generation can take some time, after that you will see link to generatet project
-Генерация проекта может занять некоторое время, по завершении которого появится ссылкаyo на проект "Проект доступен..."
-Если всё удовлетворяет правилам синтаксиса (пока проверок нет), то будут созданы:
 If all ok, this parts of project will be generated:
 * Database
 * NameSpace
