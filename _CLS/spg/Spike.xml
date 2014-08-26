@@ -74,6 +74,10 @@
 <FormalSpec>NameSpace,Package,location="C:\InterSystems\Cache\CSP"</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
+		w !,"SPG MOD",!
+		#dim fullpath = "http://akvant.pro/scrumbler/template/"
+		#dim broker="/brokerspg777"
+
 		s defaultPath = ""
 		s ns = $namespace
 		if location="C:\InterSystems\Cache\CSP" {
@@ -107,18 +111,23 @@
 		
 		//w !,"***** NS-"_NameSpace," P-",Package," L-",location," jsP-",jsPath,"-"
 		s File=##class(%File).%New()
+		/*
+		Избавляемся от копирования директорий
 		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\css\"),st=File.%Save()
 		//s st=File.CreateDirectory(location_"\"_LNameSpace_"\lib\"),st=File.%Save()
 		s st=File.CopyDir(TemplPath,location,1,1)
 		
 		s st=File.%Save()
 		w st
+		*/
 		//s st=File.CopyDir(BootStrapDir,location_"\"_LNameSpace_"\css\",1,1),st=File.%Save()
 		//s st=File.CopyDir(AngularDir,location_"\"_LNameSpace_"\lib\",1,1),st=File.%Save()
+		//костыль
+		s st=File.CreateDirectory("c:\temp"),st=File.%Save()
 		s st=File.CreateDirectory(jsPath),st=File.%Save()
 		s st=File.CreateDirectory(partPath),st=File.%Save()
 		k File
- 
+ 		d ##class(spg.htmlTemplates).GenerateIndex(location_"\index.html",fullpath,Package)
  /*		
 		S stream=##class(%FileCharacterStream).%New()
 		S stream.Filename=TemplPath_"\index.html"
@@ -288,7 +297,7 @@
 			
 		}
 		s App=App_"otherwise({redirectTo: '/"_ClassName_"'});}])"_$C(10)
-		s App=App_".config(function($datepickerProvider) { angular.extend($datepickerProvider.defaults, { dateFormat: 'MM/dd/yyyy', startWeek: 1 }); }) .config(function($timepickerProvider) { angular.extend($timepickerProvider.defaults, { timeFormat: 'HH:mm:ss', length: 4 }); })"
+		s App=App_".config(function($datepickerProvider) { angular.extend($datepickerProvider.defaults, { dateFormat: 'dd/MM/yyyy', startWeek: 1 }); }) .config(function($timepickerProvider) { angular.extend($timepickerProvider.defaults, { timeFormat: 'HH:mm:ss', length: 4 }); })"
 		s menu=menu_"</ul>"_$C(10)
 		s XDATA=XDATA_$C(9)_"</Routes>"_$C(10),st=##class(spg.Class).%CreateClass(NameSpace,"WEB.Broker","%CSP.REST")
 		s st= ##class(spg.Class).%Compile(NameSpace,"WEB.Broker"),st=temp.Write(XDATA) //, XDATA=""
@@ -303,11 +312,13 @@
 		d ..SaveToFile(jsPath_"app.js",App)
 		d ..SaveToFile(partPath_"menu.html",menu)
 		s $namespace=ns
+		/*
 		w !,"**********************************"
 		w !,"проект доступен по адресу имя_сервера "_..GetDefault(NameSpace)_"/"_Package_"/index.html"
 		w !,"необходимо связать брокер на адрес /"_WebApp
 		w !,"задать Класс-обработчик 'WEB.Broker'"_$C(10)_"ВНИМАНИЕ!!! Регистр имеет значение!"
 		w !,"**********************************"
+		*/
 		// todo: возвращать адреcc ??
 		Q $$$OK
 ]]></Implementation>

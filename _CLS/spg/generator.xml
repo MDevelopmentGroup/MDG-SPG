@@ -121,6 +121,7 @@ Cоздание класса</Description>
       set sn = $namespace
       set $namespace = obj.namespace
       set property=##class(%Dictionary.PropertyDefinition).%New(obj.nameClass)
+      //zw property
       set property.Name = obj.nameProperty
       //Описание
       set property.Description = $ZCONVERT(obj.Description,"I","UTF8")
@@ -136,9 +137,10 @@ Cоздание класса</Description>
       set property.Relationship = obj.Relationship
       set property.Required = obj.Required
       set property.Calculated = obj.Calculated
-      set property.Parameters = obj.Parameter
+      // указываем формат даты для корректного хранения
+       if (property.Type ="%Date"){ d property.Parameters.SetAt(4,"FORMAT") }
       set status=property.%Save()
-      w !,"propid - ",property.%Id(),!
+      //w !,"propid begin- ",property.%Id()," - end",!
       set $namespace = sn
       q $$$OK
 ]]></Implementation>
@@ -185,7 +187,7 @@ Cоздание класса</Description>
                   s Property.nameClass = Class.nameClass
                   s Property.nameProperty = Property.Name
 			      //w !,"1"
-			      if (Property.Type ="%Date"){ s Property.FORMAT = 4 }
+			      //if (Property.Type ="%Date"){ d Property.Parametr.SetAt("FORMAT",4) }
                   s Property.Relationship = "0"
                   s Property.Required = "0"
                   s Property.Calculated = "0"

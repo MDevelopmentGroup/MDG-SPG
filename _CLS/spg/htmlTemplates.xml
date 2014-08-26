@@ -9,8 +9,7 @@
 <FormalSpec>path,app</FormalSpec>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
- &html<
-<!DOCTYPE html>
+ &html<<!DOCTYPE html>
 <html ng-app='#(app)#'>
 <head lang='en'>
 <meta charset='UTF-8'>
@@ -54,6 +53,10 @@
   u filename 
   d ..IndexT(path,app)
   c filename
+  w !,"***********************************",!
+  w !,filename,!,path,!,app,!
+  w !,"***********************************",!
+  q $$$OK
 ]]></Implementation>
 </Method>
 
@@ -65,8 +68,6 @@
 <IndexLocation>^spg.htmlTemplatesI</IndexLocation>
 <StreamLocation>^spg.htmlTemplatesS</StreamLocation>
 <Data name="htmlTemplatesDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
 </Value>

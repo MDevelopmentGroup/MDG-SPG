@@ -48,6 +48,7 @@ Oterwithe, to start  - comile project by pressing F7, then press F5 in studio
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
+	//TODO: отправить в глобалы или параметры 
 	#dim fullpath = "http://akvant.pro/scrumbler/template/"
 	#dim broker="/brokerspg777"
 	d ..CreateBroker(broker)
